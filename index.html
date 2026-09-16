@@ -3,15 +3,64 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Fawaz Eltahir Ahmed Atiatallah — Senior Accounts Payable Accountant | Hospitality Accounting">
-<title>Fawaz Eltahir | Senior Accounts Payable Accountant</title>
+
+<!-- ===== Security headers (meta-delivered; GitHub Pages cannot set HTTP headers) ===== -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="format-detection" content="telephone=no,email=no">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#10263d">
+
+<!-- ===== SEO / social ===== -->
+<title data-i18n="pageTitle">Fawaz Eltahir | Senior Accounts Payable Accountant</title>
+<meta name="description" data-i18n-attr="content:metaDesc" content="Fawaz Eltahir Ahmed Atiatallah — Senior Accounts Payable Accountant | Hospitality Accounting in Saudi Arabia">
+<meta name="author" content="Fawaz Eltahir Ahmed Atiatallah">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://fawaztahir79.github.io/fawaz-portfolio/">
+<link rel="alternate" hreflang="en" href="https://fawaztahir79.github.io/fawaz-portfolio/?lang=en">
+<link rel="alternate" hreflang="ar" href="https://fawaztahir79.github.io/fawaz-portfolio/?lang=ar">
+<link rel="alternate" hreflang="x-default" href="https://fawaztahir79.github.io/fawaz-portfolio/">
+<meta property="og:type" content="profile">
+<meta property="og:title" content="Fawaz Eltahir | Senior Accounts Payable Accountant">
+<meta property="og:description" content="Hospitality accounting professional — Accounts Payable, supplier reconciliation, VAT, month-end and year-end closing.">
+<meta property="og:url" content="https://fawaztahir79.github.io/fawaz-portfolio/">
+<meta property="og:image" content="https://fawaztahir79.github.io/fawaz-portfolio/assets/profile.png">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="ar_SA">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/profile.png">
+
 <link rel="stylesheet" href="style.css">
+<!-- Sets lang/dir before first paint (no flash of wrong direction) -->
+<script src="lang-init.js"></script>
+
+<!-- Structured data: intentionally excludes phone/e-mail to limit scraping -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "Fawaz Eltahir Ahmed Atiatallah",
+  "jobTitle": "Senior Accounts Payable Accountant",
+  "worksFor": { "@type": "Organization", "name": "WAVES Hotel" },
+  "address": { "@type": "PostalAddress", "addressCountry": "SA" },
+  "url": "https://fawaztahir79.github.io/fawaz-portfolio/",
+  "image": "https://fawaztahir79.github.io/fawaz-portfolio/assets/profile.png",
+  "sameAs": ["https://www.linkedin.com/in/fawazatiatallah"],
+  "knowsLanguage": ["ar", "en"]
+}
+</script>
 </head>
 <body>
-<nav>
+<a class="skip-link" href="#main" data-i18n="skipLink">Skip to main content</a>
+
+<nav aria-label="Main navigation">
   <div class="wrap navin">
-    <div class="brand">FAWAZ ELTAHIR<small data-i18n="navTitle">Senior Accounts Payable Accountant</small></div>
-    <div class="navlinks">
+    <a class="brand" href="#top">FAWAZ ELTAHIR<small data-i18n="navTitle">Senior Accounts Payable Accountant</small></a>
+    <button id="menuBtn" class="menu-btn" type="button" aria-controls="navlinks" aria-expanded="false" aria-label="Open menu" data-i18n-attr="aria-label:menuOpen">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="navlinks" id="navlinks">
       <a href="#profile" data-i18n="navProfile">Profile</a>
       <a href="#metrics" data-i18n="navMetrics">AP Metrics</a>
       <a href="#experience" data-i18n="navExperience">Experience</a>
@@ -19,30 +68,36 @@
       <a href="#certificates" data-i18n="navCertificates">Certificates</a>
       <a href="#contact" data-i18n="navContact">Contact</a>
     </div>
-    <button id="langBtn" class="lang-btn" type="button">العربية</button>
+    <div class="nav-actions">
+      <button id="themeBtn" class="icon-btn" type="button" aria-label="Toggle dark mode" data-i18n-attr="aria-label:themeToggle" title="Theme">◐</button>
+      <button id="langBtn" class="lang-btn" type="button" aria-label="Switch language" lang="ar">العربية</button>
+    </div>
   </div>
 </nav>
 
-<header class="hero">
+<main id="main">
+<header class="hero" id="top">
 <div class="wrap hero-grid">
   <div>
     <div class="kicker" data-i18n="kicker">Hospitality Accounting • Accounts Payable • Hotel Finance</div>
     <h1 data-i18n="name">Fawaz Eltahir Ahmed Atiatallah</h1>
     <div class="role" data-i18n="role">Senior Accounts Payable Accountant</div>
     <p class="lead" data-i18n="heroText">Hospitality accounting professional with extensive hotel accounting experience across Sudan and Saudi Arabia. Experienced in Accounts Payable, supplier reconciliation, invoice processing, payment processing, VAT accounting, journal entries, bank reconciliation, revenue accounting, income audit, and month-end and year-end closing.</p>
-    <a class="btn primary" href="cv/Fawaz_Eltahir_Visual_CV_2026.pdf" target="_blank" data-i18n="visualCv">Visual CV</a>
-    <a class="btn secondary" href="https://www.linkedin.com/in/fawazatiatallah" target="_blank" rel="noopener" data-i18n="linkedin">LinkedIn</a>
+    <div class="cta">
+      <a class="btn primary" href="cv/Fawaz_Eltahir_Visual_CV_2026.pdf" target="_blank" rel="noopener noreferrer" type="application/pdf" data-i18n="visualCv">Visual CV</a>
+      <a class="btn secondary" href="https://www.linkedin.com/in/fawazatiatallah" target="_blank" rel="noopener noreferrer me" data-i18n="linkedin">LinkedIn</a>
+    </div>
   </div>
-  <img class="photo" src="assets/profile.png" alt="Fawaz Eltahir professional portrait">
+  <img class="photo" src="assets/profile.png" width="260" height="310" fetchpriority="high" decoding="async" alt="Fawaz Eltahir professional portrait" data-i18n-attr="alt:photoAlt">
 </div>
 
-<div class="wrap stats">
-  <div class="stat"><div class="num">400–650</div><div class="lbl" data-i18n="statInvoices">Supplier invoices / month</div></div>
-  <div class="stat"><div class="num">120</div><div class="lbl" data-i18n="statSuppliers">Suppliers managed</div></div>
-  <div class="stat"><div class="num">SAR 10M+</div><div class="lbl" data-i18n="statPayments">Annual payments</div></div>
-  <div class="stat"><div class="num">120–150</div><div class="lbl" data-i18n="statJv">Journal entries / month</div></div>
-  <div class="stat"><div class="num">98%+</div><div class="lbl" data-i18n="statAccuracy">Closing accuracy</div></div>
-  <div class="stat"><div class="num">&lt;2%</div><div class="lbl" data-i18n="statAudit">Audit findings</div></div>
+<div class="wrap stats" role="list">
+  <div class="stat" role="listitem"><div class="num">400–650</div><div class="lbl" data-i18n="statInvoices">Supplier invoices / month</div></div>
+  <div class="stat" role="listitem"><div class="num">120</div><div class="lbl" data-i18n="statSuppliers">Suppliers managed</div></div>
+  <div class="stat" role="listitem"><div class="num" data-i18n="sar10m">SAR 10M+</div><div class="lbl" data-i18n="statPayments">Annual payments</div></div>
+  <div class="stat" role="listitem"><div class="num">120–150</div><div class="lbl" data-i18n="statJv">Journal entries / month</div></div>
+  <div class="stat" role="listitem"><div class="num">98%+</div><div class="lbl" data-i18n="statAccuracy">Closing accuracy</div></div>
+  <div class="stat" role="listitem"><div class="num">&lt;2%</div><div class="lbl" data-i18n="statAudit">Audit findings</div></div>
 </div>
 </header>
 
@@ -55,11 +110,11 @@
 
 <section id="metrics">
 <div class="wrap">
-<h2 data-i18n="metricsHeading">Accounts Payable & Closing Performance</h2>
+<h2 data-i18n="metricsHeading">Accounts Payable &amp; Closing Performance</h2>
 <div class="metric-grid">
   <div class="metric"><strong>400–650</strong><span data-i18n="metric1">Invoices / Month</span></div>
   <div class="metric"><strong>120</strong><span data-i18n="metric2">Suppliers</span></div>
-  <div class="metric"><strong>SAR 10M+</strong><span data-i18n="metric3">Annual Payments</span></div>
+  <div class="metric"><strong data-i18n="sar10m">SAR 10M+</strong><span data-i18n="metric3">Annual Payments</span></div>
   <div class="metric"><strong>120–150</strong><span data-i18n="metric4">Journal Entries / Month</span></div>
   <div class="metric"><strong>98%+</strong><span data-i18n="metric5">Closing Accuracy</span></div>
   <div class="metric"><strong>&lt;2%</strong><span data-i18n="metric6">Audit Findings</span></div>
@@ -72,10 +127,10 @@
 <div class="wrap">
 <h2 data-i18n="experienceHeading">Professional Experience</h2>
 <div class="timeline">
-<div class="job">
-<div class="date">September 2024 — Present</div>
+<article class="job">
+<div class="date"><time datetime="2024-09" data-i18n="date1">September 2024 — Present</time></div>
 <h3 data-i18n="job1Title">Senior Accounts Payable Accountant</h3>
-<div class="org">WAVES Hotel — Umluj, Tabuk, Saudi Arabia</div>
+<div class="org" data-i18n="org1">WAVES Hotel — Umluj, Tabuk, Saudi Arabia</div>
 <ul>
 <li data-i18n="j1b1">Process approximately 400–650 supplier invoices monthly.</li>
 <li data-i18n="j1b2">Manage AP activities for approximately 120 suppliers.</li>
@@ -87,10 +142,10 @@
 <li data-i18n="j1b8">Support month-end and year-end closing, including reconciliations, accruals, outstanding balances and supporting schedules.</li>
 <li data-i18n="j1b9">Supported FY2024 and FY2025 closing and external audit activities; closing accuracy exceeded 98% and audit findings were below 2%.</li>
 </ul>
-</div>
+</article>
 
-<div class="job">
-<div class="date">November 2020 — April 2024</div>
+<article class="job">
+<div class="date"><time datetime="2020-11" data-i18n="date3">November 2020 — April 2024</time></div>
 <h3 data-i18n="job3Title">Owner — Mobile Phones &amp; Accessories Trading</h3>
 <div class="org" data-i18n="privateBusiness">Private Business</div>
 <ul>
@@ -98,48 +153,48 @@
 <li data-i18n="j3b2">Monitored supplier balances, business financial records and profitability.</li>
 <li data-i18n="j3b3">Negotiated with suppliers and managed purchasing decisions according to demand and available capital.</li>
 </ul>
-</div>
+</article>
 
-<div class="job">
-<div class="date">August 2016 — November 2020</div>
+<article class="job">
+<div class="date"><time datetime="2016-08" data-i18n="date2">August 2016 — November 2020</time></div>
 <h3 data-i18n="job2Title">Revenue Accountant</h3>
-<div class="org">BRAIRA Hotels &amp; Resorts — Saudi Arabia</div>
+<div class="org" data-i18n="org2">BRAIRA Hotels &amp; Resorts — Saudi Arabia</div>
 <ul>
 <li data-i18n="j2b1">Audited and reconciled daily hotel revenue and reviewed revenue transactions for accuracy and completeness.</li>
 <li data-i18n="j2b2">Investigated discrepancies between operational systems, revenue reports and accounting records.</li>
 <li data-i18n="j2b3">Supported revenue control and internal financial control procedures.</li>
 <li data-i18n="j2b4">Prepared financial reports, supporting schedules and audit documentation.</li>
 </ul>
-</div>
+</article>
 
-<div class="job">
-<div class="date">November 2009 — August 2016</div>
+<article class="job">
+<div class="date"><time datetime="2009-11" data-i18n="date4">November 2009 — August 2016</time></div>
 <h3 data-i18n="job4Title">Outlet Auditor</h3>
-<div class="org">Al Salam Rotana — Sudan</div>
+<div class="org" data-i18n="org4">Al Salam Rotana — Sudan</div>
 <ul>
 <li data-i18n="j4b1">Audited daily hotel outlet sales and financial transactions.</li>
 <li data-i18n="j4b2">Reviewed cash collections and POS transactions and reconciled outlet sales with cash and system records.</li>
 <li data-i18n="j4b3">Investigated discrepancies and reported exceptions to relevant departments.</li>
 </ul>
-</div>
+</article>
 
-<div class="job">
-<div class="date">March 2005 — August 2009</div>
+<article class="job">
+<div class="date"><time datetime="2005-03" data-i18n="date5">March 2005 — August 2009</time></div>
 <h3 data-i18n="job5Title">Waiter</h3>
-<div class="org">Hotel Palace — Sudan</div>
+<div class="org" data-i18n="org5">Hotel Palace — Sudan</div>
 <ul>
 <li data-i18n="j5b1">Provided professional food and beverage service and processed guest orders accurately.</li>
 <li data-i18n="j5b2">Coordinated with kitchen and service teams and maintained hotel service standards.</li>
 </ul>
-</div>
+</article>
 </div>
 </div>
 </section>
 
 <section id="systems">
 <div class="wrap">
-<h2 data-i18n="systemsHeading">Systems & Technical Skills</h2>
-<div class="card">
+<h2 data-i18n="systemsHeading">Systems &amp; Technical Skills</h2>
+<div class="card chips">
 <span class="chip">SunSystems 6.4</span><span class="chip">Opera PMS</span><span class="chip">Fidelio</span><span class="chip">MICROS</span><span class="chip">Excel</span><span class="chip">Onyx ERP</span>
 </div>
 </div>
@@ -148,18 +203,55 @@
 <section id="skills">
 <div class="wrap">
 <h2 data-i18n="skillsHeading">Core Competencies</h2>
-<div class="card">
-<span class="chip" data-i18n="skill1">Accounts Payable</span><span class="chip" data-i18n="skill2">Invoice Processing</span><span class="chip" data-i18n="skill3">Supplier & Vendor Management</span><span class="chip" data-i18n="skill4">Supplier Reconciliation</span><span class="chip" data-i18n="skill5">Payment Processing</span><span class="chip" data-i18n="skill6">VAT Accounting</span><span class="chip" data-i18n="skill7">Journal Entries</span><span class="chip" data-i18n="skill8">General Ledger Support</span><span class="chip" data-i18n="skill9">Bank Reconciliation</span><span class="chip" data-i18n="skill10">Account Reconciliation</span><span class="chip" data-i18n="skill11">Month-End Closing</span><span class="chip" data-i18n="skill12">Year-End Closing</span><span class="chip" data-i18n="skill13">Financial Reporting</span><span class="chip" data-i18n="skill14">Expense Accounting</span><span class="chip" data-i18n="skill15">Revenue Reconciliation</span><span class="chip" data-i18n="skill16">Income Audit</span><span class="chip" data-i18n="skill17">Internal Controls</span><span class="chip" data-i18n="skill18">Audit Support</span><span class="chip" data-i18n="skill19">Hotel Accounting</span><span class="chip" data-i18n="skill20">Hospitality Finance</span>
+<div class="card chips">
+<span class="chip" data-i18n="skill1">Accounts Payable</span><span class="chip" data-i18n="skill2">Invoice Processing</span><span class="chip" data-i18n="skill3">Supplier &amp; Vendor Management</span><span class="chip" data-i18n="skill4">Supplier Reconciliation</span><span class="chip" data-i18n="skill5">Payment Processing</span><span class="chip" data-i18n="skill6">VAT Accounting</span><span class="chip" data-i18n="skill7">Journal Entries</span><span class="chip" data-i18n="skill8">General Ledger Support</span><span class="chip" data-i18n="skill9">Bank Reconciliation</span><span class="chip" data-i18n="skill10">Account Reconciliation</span><span class="chip" data-i18n="skill11">Month-End Closing</span><span class="chip" data-i18n="skill12">Year-End Closing</span><span class="chip" data-i18n="skill13">Financial Reporting</span><span class="chip" data-i18n="skill14">Expense Accounting</span><span class="chip" data-i18n="skill15">Revenue Reconciliation</span><span class="chip" data-i18n="skill16">Income Audit</span><span class="chip" data-i18n="skill17">Internal Controls</span><span class="chip" data-i18n="skill18">Audit Support</span><span class="chip" data-i18n="skill19">Hotel Accounting</span><span class="chip" data-i18n="skill20">Hospitality Finance</span><span class="chip" data-i18n="skill21">Financial Data Confidentiality</span><span class="chip" data-i18n="skill22">Segregation of Duties</span><span class="chip" data-i18n="skill23">Fraud Prevention Controls</span>
+</div>
+</div>
+</section>
+
+<section id="security">
+<div class="wrap">
+<h2 data-i18n="secHeading">Information Security &amp; Financial Controls</h2>
+<p class="sub" data-i18n="secIntro">Handling supplier data, bank details and payment files requires more than accuracy — it requires disciplined information-security practice. The controls below are applied in day-to-day AP work.</p>
+<div class="grid sec-grid">
+  <div class="card">
+    <h3 data-i18n="sec1Title">Supplier Master Data &amp; Bank-Detail Verification</h3>
+    <ul>
+      <li data-i18n="sec1a">Independent call-back verification of any new or changed supplier bank account before the first payment.</li>
+      <li data-i18n="sec1b">Awareness of Business Email Compromise (BEC) and invoice-redirection fraud; suspicious change requests are escalated, never actioned from e-mail alone.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3 data-i18n="sec2Title">Segregation of Duties &amp; Approval Workflow</h3>
+    <ul>
+      <li data-i18n="sec2a">Invoice entry, approval and payment release performed by separate roles; three-way matching (PO, GRN, invoice) before posting.</li>
+      <li data-i18n="sec2b">Duplicate-invoice and duplicate-payment checks embedded in the monthly routine.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3 data-i18n="sec3Title">Access Control &amp; System Hygiene</h3>
+    <ul>
+      <li data-i18n="sec3a">Least-privilege access in SunSystems / Opera; no shared credentials; workstation locked whenever unattended.</li>
+      <li data-i18n="sec3b">Multi-factor authentication on e-mail and banking portals; periodic review of user access rights with IT.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3 data-i18n="sec4Title">Data Confidentiality &amp; Audit Trail</h3>
+    <ul>
+      <li data-i18n="sec4a">Financial files shared only through approved channels; sensitive documents password-protected and retained per policy.</li>
+      <li data-i18n="sec4b">Complete, traceable supporting documentation for every journal entry and payment — the foundation of &lt;2% audit findings.</li>
+    </ul>
+  </div>
 </div>
 </div>
 </section>
 
 <section id="certificates">
 <div class="wrap">
-<h2 data-i18n="certHeading">Education, Certifications & Awards</h2>
+<h2 data-i18n="certHeading">Education, Certifications &amp; Awards</h2>
 <div class="grid">
 <div class="card">
-<h3 data-i18n="eduTitle">Education & Professional Certificates</h3>
+<h3 data-i18n="eduTitle">Education &amp; Professional Certificates</h3>
 <ul>
 <li data-i18n="edu1">Certified Business and Finance Professional (CBFP) — IAPPD, July 2024</li>
 <li data-i18n="edu2">Microsoft Certified IT Professional (MCITP) — Zoomtech, 2013</li>
@@ -168,7 +260,7 @@
 </ul>
 </div>
 <div class="card">
-<h3 data-i18n="awardTitle">Recognition & Service</h3>
+<h3 data-i18n="awardTitle">Recognition &amp; Service</h3>
 <ul>
 <li data-i18n="award1">Long Service Award — Rotana, 5 Years of Service</li>
 <li data-i18n="award2">Employee Recognition / Certificate of Appreciation — WAVES Hotel, March 2026</li>
@@ -178,7 +270,7 @@
 </div>
 </section>
 
-<section>
+<section id="languages">
 <div class="wrap">
 <h2 data-i18n="languagesHeading">Languages</h2>
 <div class="card"><strong data-i18n="arabic">Arabic</strong> — <span data-i18n="arabicLevel">Native</span> &nbsp; | &nbsp; <strong data-i18n="english">English</strong> — <span data-i18n="englishLevel">Professional Working Proficiency</span></div>
@@ -187,17 +279,30 @@
 
 <section id="contact">
 <div class="wrap">
-<div class="contact">
+<address class="contact">
 <h2 data-i18n="contactHeading">Let's Connect</h2>
 <p data-i18n="contactText">Open to Senior Accounts Payable Accountant, AP Supervisor and hotel finance opportunities.</p>
-<p><strong data-i18n="phoneLabel">Phone:</strong> +966 54 556 8526<br>
-<strong data-i18n="emailLabel">Email:</strong> fawztahir@yahoo.com<br>
-<strong>LinkedIn:</strong> <a href="https://www.linkedin.com/in/fawazatiatallah" target="_blank" rel="noopener">linkedin.com/in/fawazatiatallah</a></p>
-</div>
+<!-- Contact details are assembled client-side from split parts to reduce automated harvesting.
+     The <noscript> block keeps them readable without JavaScript. -->
+<p class="contact-lines">
+<span><strong data-i18n="phoneLabel">Phone:</strong> <span class="reveal" data-kind="tel" data-a="+966" data-b="54" data-c="556" data-d="8526"><noscript>+966 54 556 8526</noscript></span></span><br>
+<span><strong data-i18n="emailLabel">Email:</strong> <span class="reveal" data-kind="mail" data-u="fawztahir" data-h="yahoo" data-t="com"><noscript>fawztahir [at] yahoo [dot] com</noscript></span></span><br>
+<span><strong>LinkedIn:</strong> <a href="https://www.linkedin.com/in/fawazatiatallah" target="_blank" rel="noopener noreferrer me">linkedin.com/in/fawazatiatallah</a></span>
+</p>
+</address>
 </div>
 </section>
+</main>
 
-<footer>Fawaz Eltahir Ahmed Atiatallah • Senior Accounts Payable Accountant</footer>
-<script src="script.js"></script>
+<footer>
+  <div class="wrap">
+    <div>Fawaz Eltahir Ahmed Atiatallah • <span data-i18n="navTitle">Senior Accounts Payable Accountant</span> • © <span id="year">2026</span></div>
+    <div class="privacy" data-i18n="privacyNote">This site sets no cookies and uses no analytics or third-party scripts. Only your language and theme preferences are stored locally in your browser.</div>
+  </div>
+</footer>
+
+<a href="#top" id="toTop" class="to-top" aria-label="Back to top" data-i18n-attr="aria-label:backToTop">↑</a>
+
+<script src="script.js" defer></script>
 </body>
 </html>
