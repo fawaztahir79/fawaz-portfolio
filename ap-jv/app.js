@@ -254,17 +254,24 @@ window.addEventListener("load", renderSuppliers);
 
 function renderSuppliers(){
   const suppliers = FULL_REF.suppliers || [];
+  const accountCodes = Object.keys(REF.accounts || FULL_REF.accounts || {}).sort();
   const code = $("fSupCode"), name = $("fSupplier");
   if (!code || !name) return;
   const selectedCode = code.value, selectedName = name.value;
-  // Keep each supplier dropdown focused on the field it represents:
-  // the code list shows codes only, and the name list shows names only.
-  code.innerHTML = `<option value="">${esc(t("selSupplierCode"))}</option>` + suppliers.map(v=>`<option value="${esc(v.code)}">${esc(v.code)}</option>`).join("");
+  // The supplier-code field is intentionally an account-code selector:
+  // any code from the chart of accounts may be used for the payable line.
+  code.innerHTML = `<option value="">${esc(t("selSupplierCode"))}</option>` + accountCodes.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("");
   name.innerHTML = `<option value="">${esc(t("selSupplier"))}</option>` + suppliers.map(v=>`<option value="${esc(v.name)}">${esc(v.name)}</option>`).join("");
-  if (suppliers.some(v=>v.code===selectedCode)) code.value = selectedCode;
+  if (accountCodes.includes(selectedCode)) code.value = selectedCode;
   if (suppliers.some(v=>v.name===selectedName)) name.value = selectedName;
-  code.onchange = ()=>{ const v=suppliers.find(x=>x.code===code.value); if(v) name.value=v.name; };
-  name.onchange = ()=>{ const v=suppliers.find(x=>x.name===name.value); if(v) code.value=v.code; };
+  code.onchange = ()=>{
+    const v = suppliers.find(x=>x.code===code.value);
+    if (v) name.value = v.name;
+  };
+  name.onchange = ()=>{
+    const v = suppliers.find(x=>x.name===name.value);
+    if (v) code.value = v.code;
+  };
 }
 
 function hrCategory(acc){
@@ -335,7 +342,7 @@ document.getElementById("refFile").addEventListener("change", async e=>{
     if (!next.departments.length || !Object.keys(next.accounts).length) throw new Error("sheets");
     if (!next.hrCodes.length) next.hrCodes = DEMO_REF.hrCodes;
     REF = next;
-    renderRefStatus(); renderAlloc();
+    renderRefStatus(); renderSuppliers(); renderAlloc();
     setDocStatus(`✔ ${t("refLoaded")} ${f.name}`);
   }catch(err){
     alert(t("refErr"));
@@ -732,7 +739,8 @@ $("buildBtn").addEventListener("click", ()=>{
     // non-standard tax (e.g. 5% municipal fee): keep in expense? No — require review, add as warning-tagged debit line to first expense account is NOT allowed silently.
     rows.push({acc:"", name:t("uncertain"), dept:"", an:"", dr:r2(v), cr:0, desc:t("muniWarn"), uncertain:true});
   }
-  rows.push({acc:CONTROL.AP_CONTROL, name:REF.accounts[CONTROL.AP_CONTROL]?REF.accounts[CONTROL.AP_CONTROL].desc:"Supplier / Trade Payables", dept:"", an:"", dr:0, cr:r2(g), desc:`${t("apLineDesc")} — ${supCode ? `${supCode} / ` : ""}${sup} ${invNo}`});
+  const payableCode = supCode || CONTROL.AP_CONTROL;
+  rows.push({acc:payableCode, name:REF.accounts[payableCode]?REF.accounts[payableCode].desc:"Account selected for supplier line", dept:"", an:"", dr:0, cr:r2(g), desc:`${t("apLineDesc")} — ${supCode ? `${supCode} / ` : ""}${sup} ${invNo}`});
 
   const totDr = r2(rows.reduce((s,r)=>s+r.dr,0));
   const totCr = r2(rows.reduce((s,r)=>s+r.cr,0));
