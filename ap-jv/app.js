@@ -33,7 +33,8 @@ refUpload:"رفع الملف المرجعي Waves_Hotel_COA_Department_Reference
 thAccount:"حساب المصروف (GL)", thDept:"القسم", thAnalysis:"كود التحليل", thAmount:"المبلغ (صافي)",
 addLine:"+ إضافة سطر توزيع",
 hrConfirmLbl:"أؤكد (كمحاسب مسؤول) أن هذا قيد رواتب/مخصصات حقيقي من مصدره الصحيح وليس فاتورة مورد اعتيادية — نطاق 50000–55100 يتطلب تأكيدًا بشريًا صريحًا.",
-s4Title:"مسودة قيد اليومية JV", buildBtn:"توليد مسودة القيد",
+    s4Title:"مسودة قيد اليومية JV", buildBtn:"توليد مسودة القيد",
+    addInvoice:"+ إضافة الفاتورة للقيد المجمع", clearBatch:"مسح قائمة الفواتير", batchAdded:"تمت إضافة الفاتورة للقيد المجمع", batchCount:"عدد الفواتير المضافة", batchEmpty:"أضف فاتورة واحدة على الأقل إلى القيد المجمع.", batchSup:"عدة موردين", mixedCurr:"لا يمكن تجميع فواتير بعملات مختلفة في قيد واحد.",
 jvAcc:"الحساب", jvName:"الوصف", jvDept:"القسم", jvAn:"تحليل", jvDr:"مدين", jvCr:"دائن",
 csvBtn:"تصدير CSV (مسودة استيراد SunSystems)", copyBtn:"نسخ القيد كنص", saveBtn:"حفظ في سجل الفواتير", printBtn:"طباعة",
 sunNote:"تنبيه (القسم 13): صيغة استيراد SunSystems الرسمية غير مؤكدة — الملف الناتج مسودة CSV للمراجعة فقط وليس ملف استيراد إنتاجي (SUNSYSTEMS IMPORT FORMAT NOT CONFIRMED).",
@@ -106,7 +107,8 @@ refUpload:"Upload reference file Waves_Hotel_COA_Department_Reference.xlsx",
 thAccount:"Expense GL account", thDept:"Department", thAnalysis:"Analysis code", thAmount:"Amount (net)",
 addLine:"+ Add allocation line",
 hrConfirmLbl:"I confirm (as responsible accountant) this is a genuine payroll/statutory journal from its proper source, not a standard supplier invoice — range 50000–55100 requires explicit human confirmation.",
-s4Title:"Journal Voucher (JV) Draft", buildBtn:"Generate JV draft",
+    s4Title:"Journal Voucher (JV) Draft", buildBtn:"Generate JV draft",
+    addInvoice:"+ Add invoice to batch JV", clearBatch:"Clear invoice batch", batchAdded:"Invoice added to the batch JV", batchCount:"Invoices added", batchEmpty:"Add at least one invoice to the batch JV.", batchSup:"Multiple suppliers", mixedCurr:"Invoices with different currencies cannot be combined in one JV.",
 jvAcc:"Account", jvName:"Description", jvDept:"Dept", jvAn:"Analysis", jvDr:"Debit", jvCr:"Credit",
 csvBtn:"Export CSV (SunSystems import DRAFT)", copyBtn:"Copy JV as text", saveBtn:"Save to invoice register", printBtn:"Print",
 sunNote:"Note (Section 13): the official SunSystems import specification is not confirmed — the exported file is a review DRAFT only, not a production import file (SUNSYSTEMS IMPORT FORMAT NOT CONFIRMED).",
@@ -607,6 +609,42 @@ function validateInvoice(){
 
 /* -------------------------- allocation lines ---------------------------- */
 let alloc = [{acc:"", dept:"", an:"", amt:null}];
+let batchInvoices = [];
+
+function renderBatchStatus(message=""){
+  const status = $("batchStatus");
+  if (!status) return;
+  status.innerHTML = batchInvoices.length
+    ? chk("info", `${t("batchCount")}: <b>${batchInvoices.length}</b>${message?` — ${esc(message)}`:""}`)
+    : (message ? chk("warn", esc(message)) : "");
+}
+
+function resetInvoiceEntry(){
+  ["fSupplier","fSupCode","fVatNo","fInvNo","fInvDate","fDueDate","fPO","fDesc","fNet","fVat","fGross"].forEach(id=>$(id).value="");
+  $("fCurr").value="SAR"; $("fRate").value="15";
+  alloc = [{acc:"", dept:"", an:"", amt:null}];
+  renderAlloc(); $("vatCheck").innerHTML=""; $("codingChecks").innerHTML="";
+}
+
+function snapshotCurrentInvoice(){
+  const inv = invoiceIssues(), cod = codingIssues();
+  if (inv.errors.length || cod.errors.length) return {errors:[...inv.errors,...cod.errors]};
+  return {data:{
+    sup:$("fSupplier").value.trim(), supCode:$("fSupCode").value.trim(), invNo:$("fInvNo").value.trim(),
+    invDate:$("fInvDate").value, curr:$("fCurr").value, desc:$("fDesc").value.trim(),
+    rateSel:$("fRate").value, n:num("fNet"), v:num("fVat")||0, g:num("fGross"),
+    lines:cod.lines.map(l=>({...l}))
+  }};
+}
+
+$("addInvoiceBtn").addEventListener("click", ()=>{
+  const snap = snapshotCurrentInvoice();
+  if (snap.errors){ validateInvoice(); validateCoding(); alert(t("buildFirst")); return; }
+  batchInvoices.push(snap.data);
+  renderBatchStatus(t("batchAdded"));
+  resetInvoiceEntry();
+});
+$("clearBatchBtn").addEventListener("click", ()=>{ batchInvoices=[]; renderBatchStatus(); });
 
 function accOptions(sel){
   const codes = Object.keys(REF.accounts).filter(c=>!REF.accounts[c].bs).sort();
@@ -702,33 +740,28 @@ $("fNet").addEventListener("input", updateAllocSum);
 /* ------------------------------ build JV -------------------------------- */
 let currentJV = null;
 
-$("buildBtn").addEventListener("click", ()=>{
-  validateInvoice(); validateCoding();
-  const inv = invoiceIssues(), cod = codingIssues();
-  if (inv.errors.length || cod.errors.length){
-    $("jvWrap").hidden = true;
-    alert(t("buildFirst"));
+function buildJV(invoices){
+  const curr = invoices[0].curr;
+  if (invoices.some(i=>i.curr!==curr)){
+    alert(t("mixedCurr"));
     return;
   }
-  const rateSel = $("fRate").value;
-  const n = num("fNet"), v = num("fVat")||0, g = num("fGross");
-  const sup = $("fSupplier").value.trim(), supCode = $("fSupCode").value.trim(), invNo = $("fInvNo").value.trim(), invDate = $("fInvDate").value;
-  const desc = $("fDesc").value.trim(), curr = $("fCurr").value;
-  const ref = "APJV-" + invDate.replace(/-/g,"") + "-" + invNo.replace(/[^A-Za-z0-9]/g,"").slice(-8).toUpperCase();
-
+  const dateKey = invoices.map(i=>i.invDate.replace(/-/g,"")).join("").slice(-8);
+  const ref = "APJV-BATCH-" + dateKey;
   const rows = [];
-  cod.lines.forEach(l=>{
-    const a = REF.accounts[l.acc];
-    rows.push({acc:l.acc, name:a.desc, dept:l.dept, an:l.an||"", dr:r2(l.amt), cr:0, desc:`${sup} ${invNo} — ${desc}`});
+  invoices.forEach(inv=>{
+    inv.lines.forEach(l=>{
+      const a = REF.accounts[l.acc];
+      rows.push({acc:l.acc, name:a.desc, dept:l.dept, an:l.an||"", dr:r2(l.amt), cr:0, desc:`${inv.sup} (${inv.supCode}) ${inv.invNo} — ${inv.desc}`, invoiceNo:inv.invNo, invoiceDate:inv.invDate, supplierCode:inv.supCode});
+    });
+    if (inv.rateSel==="15" && inv.v>0){
+      rows.push({acc:CONTROL.VAT_INPUT, name:REF.accounts[CONTROL.VAT_INPUT]?REF.accounts[CONTROL.VAT_INPUT].desc:"VAT Input", dept:"", an:"", dr:r2(inv.v), cr:0, desc:`${t("vatLineDesc")} — ${inv.invNo}`, invoiceNo:inv.invNo, invoiceDate:inv.invDate, supplierCode:inv.supCode});
+    } else if (inv.v>0){
+      rows.push({acc:"", name:t("uncertain"), dept:"", an:"", dr:r2(inv.v), cr:0, desc:`${t("muniWarn")} — ${inv.invNo}`, uncertain:true, invoiceNo:inv.invNo, invoiceDate:inv.invDate, supplierCode:inv.supCode});
+    }
+    // Each invoice gets its own payable line, using its actual supplier code.
+    rows.push({acc:inv.supCode, name:inv.sup, dept:"", an:"", dr:0, cr:r2(inv.g), desc:`${t("apLineDesc")} — ${inv.sup} (${inv.supCode}) ${inv.invNo}`, supplierCode:inv.supCode, invoiceNo:inv.invNo, invoiceDate:inv.invDate});
   });
-  if (rateSel==="15" && v>0){
-    rows.push({acc:CONTROL.VAT_INPUT, name:REF.accounts[CONTROL.VAT_INPUT]?REF.accounts[CONTROL.VAT_INPUT].desc:"VAT Input", dept:"", an:"", dr:r2(v), cr:0, desc:`${t("vatLineDesc")} — ${invNo}`});
-  } else if (v>0){
-    // non-standard tax (e.g. 5% municipal fee): keep in expense? No — require review, add as warning-tagged debit line to first expense account is NOT allowed silently.
-    rows.push({acc:"", name:t("uncertain"), dept:"", an:"", dr:r2(v), cr:0, desc:t("muniWarn"), uncertain:true});
-  }
-  // The supplier subledger code is the payable line code; do not replace it with the GL AP control account.
-  rows.push({acc:supCode, name:sup, dept:"", an:"", dr:0, cr:r2(g), desc:`${t("apLineDesc")} — ${sup} (${supCode}) ${invNo}`, supplierCode:supCode});
 
   const totDr = r2(rows.reduce((s,r)=>s+r.dr,0));
   const totCr = r2(rows.reduce((s,r)=>s+r.cr,0));
@@ -742,13 +775,13 @@ $("buildBtn").addEventListener("click", ()=>{
   const confCls = conf>=95?"hi":conf>=80?"md":"lo";
   const confTxt = conf>=95?t("confHi"):conf>=80?t("confMd"):t("confLo");
 
-  currentJV = {ref, invDate, sup, supCode, invNo, curr, rows, totDr, totCr, diff, balanced, gross:g, net:n, vat:v, conf};
+  currentJV = {ref, invDate:invoices[0].invDate, sup:t("batchSup"), supCode:"", invNo:invoices.map(i=>i.invNo).join(", "), curr, rows, invoices, totDr, totCr, diff, balanced, gross:r2(invoices.reduce((s,i)=>s+i.g,0)), net:r2(invoices.reduce((s,i)=>s+i.n,0)), vat:r2(invoices.reduce((s,i)=>s+i.v,0)), conf};
 
   $("jvMeta").innerHTML = `
     <div><b>${esc(t("jvRef"))}:</b> <span dir="ltr">${esc(ref)}</span></div>
-    <div><b>${esc(t("jvDate"))}:</b> <span dir="ltr">${esc(invDate)}</span></div>
-    <div><b>${esc(t("jvSup"))}:</b> ${esc(sup)} · <span dir="ltr">${esc(supCode)}</span></div>
-    <div><b>${esc(t("jvInv"))}:</b> <span dir="ltr">${esc(invNo)}</span> · ${esc(curr)}</div>`;
+    <div><b>${esc(t("jvDate"))}:</b> <span dir="ltr">${esc(invoices.map(i=>i.invDate).join(", "))}</span></div>
+    <div><b>${esc(t("jvSup"))}:</b> ${esc(t("batchSup"))} (${invoices.length})</div>
+    <div><b>${esc(t("jvInv"))}:</b> <span dir="ltr">${esc(invoices.map(i=>i.invNo).join(", "))}</span> · ${esc(curr)}</div>`;
 
   $("jvBody").innerHTML = rows.map(r=>`<tr>
     <td dir="ltr">${esc(r.acc)||"—"}</td><td>${esc(r.name)}${r.desc?`<div class="acc-meta">${esc(r.desc)}</div>`:""}</td>
@@ -767,6 +800,16 @@ $("buildBtn").addEventListener("click", ()=>{
 
   $("jvWrap").hidden = false;
   if ($("jvWrap").scrollIntoView) $("jvWrap").scrollIntoView({behavior:"smooth"});
+}
+
+$("buildBtn").addEventListener("click", ()=>{
+  let invoices = batchInvoices.slice();
+  if (!invoices.length){
+    const snap = snapshotCurrentInvoice();
+    if (snap.errors){ validateInvoice(); validateCoding(); $("jvWrap").hidden=true; alert(t("buildFirst")); return; }
+    invoices = [snap.data];
+  }
+  buildJV(invoices);
 });
 
 /* ------------------------------ exports --------------------------------- */
@@ -782,7 +825,7 @@ $("csvBtn").addEventListener("click", ()=>{
   const j = currentJV;
   const head = ["DRAFT - NOT A PRODUCTION SUNSYSTEMS IMPORT FILE - HUMAN APPROVAL REQUIRED"];
   const cols = ["JournalRef","TransDate","AccountCode","AccountDesc","Department","AnalysisCode","Description","Currency","Debit","Credit"];
-  const lines = j.rows.map(r=>[j.ref, j.invDate, r.acc, r.name, r.dept, r.an, r.desc, j.curr, r.dr?r.dr.toFixed(2):"", r.cr?r.cr.toFixed(2):""].map(csvCell).join(","));
+  const lines = j.rows.map(r=>[j.ref, r.invoiceDate||j.invDate, r.acc, r.name, r.dept, r.an, r.desc, j.curr, r.dr?r.dr.toFixed(2):"", r.cr?r.cr.toFixed(2):""].map(csvCell).join(","));
   dl(`${j.ref}_DRAFT.csv`, head.join("\n")+"\n"+cols.join(",")+"\n"+lines.join("\n"));
 });
 
@@ -813,7 +856,9 @@ $("saveBtn").addEventListener("click", ()=>{
   if (!currentJV) return;
   const j = currentJV;
   const reg = loadReg();
-  reg.unshift({ts:new Date().toISOString().slice(0,16).replace("T"," "), sup:j.sup, inv:j.invNo, invDate:j.invDate, gross:j.gross, ref:j.ref});
+  const ts = new Date().toISOString().slice(0,16).replace("T"," ");
+  const items = j.invoices || [{sup:j.sup, invNo:j.invNo, invDate:j.invDate, g:j.gross}];
+  items.slice().reverse().forEach(inv=>reg.unshift({ts, sup:inv.sup, inv:inv.invNo, invDate:inv.invDate, gross:inv.g, ref:j.ref}));
   saveRegData(reg); renderRegister(); validateInvoice();
   alert(t("savedReg"));
 });
