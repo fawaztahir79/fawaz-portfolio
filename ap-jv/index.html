@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="AP Invoice → JV Tool — Waves Hotel (WHU) | Fawaz Eltahir">
+<title>أداة تفريغ الفواتير إلى قيد يومية JV — WHU</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<nav>
+  <div class="wrap navin">
+    <div class="brand"><span data-i18n="appTitle">أداة الفواتير → قيد يومية</span><small data-i18n="appSub">Waves Hotel (WHU) · SunSystems 6.4 · USALI 11th Ed.</small></div>
+    <div class="navlinks">
+      <a href="../index.html" data-i18n="backPortfolio">← البورتفوليو</a>
+    </div>
+    <button id="langBtn" class="lang-btn" type="button">English</button>
+  </div>
+</nav>
+
+<div class="wrap">
+
+<div class="banner" data-i18n="draftBanner">وضع المسودة — هذه الأداة مساعد للمحاسب (Copilot) ولا تُرحّل قيودًا للنظام. كل مخرجاتها تتطلب اعتماد محاسب مسؤول. AI يفسّر · الملف المرجعي يقيّد · الكود يحسب · الإنسان يعتمد.</div>
+
+<!-- STEP 1 : DOCUMENT -->
+<section class="step">
+  <h2><span class="stepno">1</span><span data-i18n="s1Title">مستند الفاتورة — الاستخلاص</span></h2>
+  <p class="hint" data-i18n="s1Hint">ارفع صورة أو PDF للفاتورة (تُقرأ محليًا في متصفحك ولا تُرسل لأي خادم). تُقرأ بيانات رمز QR الخاص بفواتير هيئة الزكاة (ZATCA) بشكل حتمي، ويُحلَّل نص الفاتورة لتعبئة الحقول تلقائيًا — مع وجوب المراجعة البشرية.</p>
+
+  <div class="grid2">
+    <div>
+      <div id="dropzone" class="dropzone">
+        <div class="dz-icon">📄</div>
+        <div data-i18n="dzText">اسحب الفاتورة هنا أو اضغط للاختيار (PDF / JPG / PNG)</div>
+        <input type="file" id="fileInput" accept=".pdf,image/*" hidden>
+      </div>
+      <div class="btnrow">
+        <button id="ocrBtn" class="btn ghost" type="button" data-i18n="ocrBtn">تشغيل OCR على الصورة (اختياري)</button>
+        <a class="btn ghost" href="sample_invoice_qr.png" download data-i18n="sampleLink">تنزيل فاتورة تجريبية (QR)</a>
+      </div>
+      <div id="docStatus" class="doc-status"></div>
+      <div id="qrResult" class="qr-box" hidden></div>
+      <canvas id="workCanvas" hidden></canvas>
+    </div>
+    <div>
+      <label class="lbl" data-i18n="pasteLbl">أو الصق نص الفاتورة هنا:</label>
+      <textarea id="pasteText" rows="9" data-i18n-ph="pastePh" placeholder="الصق نص الفاتورة (عربي أو إنجليزي)..."></textarea>
+      <div class="btnrow">
+        <button id="parseBtn" class="btn primary" type="button" data-i18n="parseBtn">تحليل النص وتعبئة الحقول</button>
+        <button id="clearDocBtn" class="btn ghost" type="button" data-i18n="clearBtn">مسح</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STEP 2 : INVOICE DATA -->
+<section class="step">
+  <h2><span class="stepno">2</span><span data-i18n="s2Title">بيانات الفاتورة والتحقق</span></h2>
+  <div class="formgrid">
+    <div class="fld"><label data-i18n="fSupplier">اسم المورد *</label><input id="fSupplier" type="text"></div>
+    <div class="fld"><label data-i18n="fSupCode">كود المورد (إن وجد)</label><input id="fSupCode" type="text"></div>
+    <div class="fld"><label data-i18n="fVatNo">الرقم الضريبي للمورد (15 خانة)</label><input id="fVatNo" type="text" inputmode="numeric"></div>
+    <div class="fld"><label data-i18n="fInvNo">رقم الفاتورة *</label><input id="fInvNo" type="text"></div>
+    <div class="fld"><label data-i18n="fInvDate">تاريخ الفاتورة *</label><input id="fInvDate" type="date"></div>
+    <div class="fld"><label data-i18n="fDueDate">تاريخ الاستحقاق</label><input id="fDueDate" type="date"></div>
+    <div class="fld"><label data-i18n="fPO">رقم أمر الشراء PO</label><input id="fPO" type="text"></div>
+    <div class="fld"><label data-i18n="fCurr">العملة</label><select id="fCurr"><option>SAR</option><option>USD</option><option>EUR</option></select></div>
+    <div class="fld"><label data-i18n="fDesc">وصف الفاتورة *</label><input id="fDesc" type="text"></div>
+    <div class="fld"><label data-i18n="fRate">المعاملة الضريبية</label>
+      <select id="fRate">
+        <option value="15" data-i18n="rate15">15% ضريبة قيمة مضافة قياسية</option>
+        <option value="0" data-i18n="rate0">0% / معفاة — بدون ضريبة</option>
+        <option value="5" data-i18n="rate5">5% رسم إشغال بلدي (تنبيه — ليست VAT)</option>
+      </select>
+    </div>
+    <div class="fld num"><label data-i18n="fNet">الصافي (قبل الضريبة) *</label><input id="fNet" type="number" step="0.01" min="0"></div>
+    <div class="fld num"><label data-i18n="fVat">مبلغ الضريبة</label><input id="fVat" type="number" step="0.01" min="0"></div>
+    <div class="fld num"><label data-i18n="fGross">الإجمالي (شامل الضريبة) *</label><input id="fGross" type="number" step="0.01" min="0"></div>
+    <div class="fld"><label>&nbsp;</label><button id="calcBtn" class="btn secondary" type="button" data-i18n="calcBtn">إكمال الحساب تلقائيًا</button></div>
+  </div>
+  <div id="vatCheck" class="checks"></div>
+</section>
+
+<!-- STEP 3 : GL CODING -->
+<section class="step">
+  <h2><span class="stepno">3</span><span data-i18n="s3Title">التوجيه المحاسبي (حساب / قسم / كود تحليل)</span></h2>
+
+  <div class="refbar">
+    <div id="refStatus" class="refstatus"></div>
+    <div>
+      <label class="btn ghost filelbl"><span data-i18n="refUpload">رفع الملف المرجعي Waves_Hotel_COA_Department_Reference.xlsx</span>
+        <input type="file" id="refFile" accept=".xlsx,.xls,.csv" hidden>
+      </label>
+    </div>
+  </div>
+
+  <table class="alloc" id="allocTable">
+    <thead>
+      <tr>
+        <th data-i18n="thAccount">حساب المصروف (GL)</th>
+        <th data-i18n="thDept">القسم</th>
+        <th data-i18n="thAnalysis">كود التحليل</th>
+        <th data-i18n="thAmount">المبلغ (صافي)</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="allocBody"></tbody>
+  </table>
+  <div class="btnrow">
+    <button id="addAllocBtn" class="btn secondary" type="button" data-i18n="addLine">+ إضافة سطر توزيع</button>
+    <span id="allocSum" class="alloc-sum"></span>
+  </div>
+  <div id="hrConfirmWrap" class="hr-confirm" hidden>
+    <label><input type="checkbox" id="hrConfirm"> <span data-i18n="hrConfirmLbl">أؤكد (كمحاسب مسؤول) أن هذا قيد رواتب/مخصصات حقيقي من مصدره الصحيح وليس فاتورة مورد اعتيادية — نطاق 50000–55100 يتطلب تأكيدًا بشريًا صريحًا.</span></label>
+  </div>
+  <div id="codingChecks" class="checks"></div>
+</section>
+
+<!-- STEP 4 : JV -->
+<section class="step">
+  <h2><span class="stepno">4</span><span data-i18n="s4Title">مسودة قيد اليومية JV</span></h2>
+  <div class="btnrow">
+    <button id="buildBtn" class="btn primary big" type="button" data-i18n="buildBtn">توليد مسودة القيد</button>
+  </div>
+  <div id="jvWrap" hidden>
+    <div class="jvmeta" id="jvMeta"></div>
+    <table class="jv" id="jvTable">
+      <thead><tr>
+        <th data-i18n="jvAcc">الحساب</th><th data-i18n="jvName">الوصف</th><th data-i18n="jvDept">القسم</th><th data-i18n="jvAn">تحليل</th><th data-i18n="jvDr">مدين</th><th data-i18n="jvCr">دائن</th>
+      </tr></thead>
+      <tbody id="jvBody"></tbody>
+      <tfoot id="jvFoot"></tfoot>
+    </table>
+    <div id="jvChecks" class="checks"></div>
+    <div class="btnrow">
+      <button id="csvBtn" class="btn primary" type="button" data-i18n="csvBtn">تصدير CSV (مسودة استيراد SunSystems)</button>
+      <button id="copyBtn" class="btn secondary" type="button" data-i18n="copyBtn">نسخ القيد كنص</button>
+      <button id="saveBtn" class="btn secondary" type="button" data-i18n="saveBtn">حفظ في سجل الفواتير</button>
+      <button id="printBtn" class="btn ghost" type="button" data-i18n="printBtn">طباعة</button>
+    </div>
+    <p class="hint" data-i18n="sunNote">تنبيه (القسم 13): صيغة استيراد SunSystems الرسمية غير مؤكدة — الملف الناتج مسودة CSV للمراجعة فقط وليس ملف استيراد إنتاجي (SUNSYSTEMS IMPORT FORMAT NOT CONFIRMED).</p>
+  </div>
+</section>
+
+<!-- STEP 5 : REGISTER -->
+<section class="step">
+  <h2><span class="stepno">5</span><span data-i18n="s5Title">سجل الفواتير وكشف التكرار</span></h2>
+  <p class="hint" data-i18n="s5Hint">يُحفظ السجل محليًا في متصفحك فقط (localStorage) ويُستخدم لكشف الفواتير المكررة: مورد + رقم فاتورة + مبلغ.</p>
+  <table class="jv" id="regTable">
+    <thead><tr>
+      <th data-i18n="rgDate">تاريخ الحفظ</th><th data-i18n="rgSup">المورد</th><th data-i18n="rgInv">رقم الفاتورة</th><th data-i18n="rgInvDate">تاريخ الفاتورة</th><th data-i18n="rgGross">الإجمالي</th><th data-i18n="rgRef">مرجع القيد</th><th></th>
+    </tr></thead>
+    <tbody id="regBody"></tbody>
+  </table>
+  <div class="btnrow">
+    <button id="regCsvBtn" class="btn secondary" type="button" data-i18n="regCsv">تصدير السجل CSV</button>
+    <button id="regClearBtn" class="btn ghost danger" type="button" data-i18n="regClear">مسح السجل</button>
+  </div>
+</section>
+
+<footer>
+  <span data-i18n="footer">أداة مساعدة للمحاسب — لا ترحيل آلي. أُعدت وفق منهجية 4D للهندسة التلقينية — فواز الطاهر أحمد عطية الله © 2026</span>
+</footer>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
