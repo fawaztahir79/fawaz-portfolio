@@ -76,7 +76,7 @@ jvImbalance:"JOURNAL REJECTED — IMBALANCE DETECTED — إجمالي المدي
 totalDr:"إجمالي المدين", totalCr:"إجمالي الدائن", diff:"الفرق",
 confLbl:"درجة الثقة في التوجيه", confHi:"عالية — تطابق كامل مع الملف المرجعي", confMd:"متوسطة — تفسير وصفي، مراجعة بشرية", confLo:"منخفضة — تصعيد مطلوب",
 approval:"الاعتماد: HUMAN REVIEW REQUIRED — لا يُرحَّل هذا القيد إلى SunSystems إلا بعد اعتماد محاسب مسؤول.",
-jvRef:"مرجع القيد", jvDate:"تاريخ القيد", jvSup:"المورد", jvInv:"الفاتورة",
+jvRef:"مرجع القيد", jvDate:"تاريخ القيد", jvSup:"المورد", jvSupCode:"كود المورد", jvInv:"الفاتورة",
 copied:"تم نسخ القيد.", savedReg:"تم حفظ الفاتورة في السجل المحلي.",
 regEmpty:"السجل فارغ.", del:"حذف", confirmClear:"هل تريد مسح كامل السجل المحلي؟",
 refLoaded:"تم تحميل الملف المرجعي:", refErr:"تعذر قراءة الملف — تأكد أنه ملف Excel يحوي أوراق: Departments / Chart of Accounts / Account-Department Mapping.",
@@ -147,7 +147,7 @@ jvImbalance:"JOURNAL REJECTED — IMBALANCE DETECTED — Total Debit ≠ Total C
 totalDr:"Total Debit", totalCr:"Total Credit", diff:"Difference",
 confLbl:"Coding confidence", confHi:"High — exact reference-file match", confMd:"Reasonable — descriptive interpretation, human review", confLo:"Low — escalation required",
 approval:"Approval: HUMAN REVIEW REQUIRED — this JV must not be posted to SunSystems without sign-off by a responsible accountant.",
-jvRef:"JV reference", jvDate:"JV date", jvSup:"Supplier", jvInv:"Invoice",
+jvRef:"JV reference", jvDate:"JV date", jvSup:"Supplier", jvSupCode:"Supplier code", jvInv:"Invoice",
 copied:"JV copied.", savedReg:"Invoice saved to local register.",
 regEmpty:"Register is empty.", del:"Delete", confirmClear:"Clear the entire local register?",
 refLoaded:"Reference file loaded:", refErr:"Could not read the file — make sure it is the Excel workbook with sheets: Departments / Chart of Accounts / Account-Department Mapping.",
@@ -717,7 +717,7 @@ $("buildBtn").addEventListener("click", ()=>{
   }
   const rateSel = $("fRate").value;
   const n = num("fNet"), v = num("fVat")||0, g = num("fGross");
-  const sup = $("fSupplier").value.trim(), invNo = $("fInvNo").value.trim(), invDate = $("fInvDate").value;
+  const sup = $("fSupplier").value.trim(), supCode = $("fSupCode").value.trim(), invNo = $("fInvNo").value.trim(), invDate = $("fInvDate").value;
   const desc = $("fDesc").value.trim(), curr = $("fCurr").value;
   const ref = "APJV-" + invDate.replace(/-/g,"") + "-" + invNo.replace(/[^A-Za-z0-9]/g,"").slice(-8).toUpperCase();
 
@@ -732,7 +732,7 @@ $("buildBtn").addEventListener("click", ()=>{
     // non-standard tax (e.g. 5% municipal fee): keep in expense? No — require review, add as warning-tagged debit line to first expense account is NOT allowed silently.
     rows.push({acc:"", name:t("uncertain"), dept:"", an:"", dr:r2(v), cr:0, desc:t("muniWarn"), uncertain:true});
   }
-  rows.push({acc:CONTROL.AP_CONTROL, name:REF.accounts[CONTROL.AP_CONTROL]?REF.accounts[CONTROL.AP_CONTROL].desc:"Supplier / Trade Payables", dept:"", an:"", dr:0, cr:r2(g), desc:`${t("apLineDesc")} — ${sup} ${invNo}`});
+  rows.push({acc:CONTROL.AP_CONTROL, name:REF.accounts[CONTROL.AP_CONTROL]?REF.accounts[CONTROL.AP_CONTROL].desc:"Supplier / Trade Payables", dept:"", an:"", dr:0, cr:r2(g), desc:`${t("apLineDesc")} — ${supCode ? `${supCode} / ` : ""}${sup} ${invNo}`});
 
   const totDr = r2(rows.reduce((s,r)=>s+r.dr,0));
   const totCr = r2(rows.reduce((s,r)=>s+r.cr,0));
@@ -746,12 +746,13 @@ $("buildBtn").addEventListener("click", ()=>{
   const confCls = conf>=95?"hi":conf>=80?"md":"lo";
   const confTxt = conf>=95?t("confHi"):conf>=80?t("confMd"):t("confLo");
 
-  currentJV = {ref, invDate, sup, invNo, curr, rows, totDr, totCr, diff, balanced, gross:g, net:n, vat:v, conf};
+  currentJV = {ref, invDate, sup, supCode, invNo, curr, rows, totDr, totCr, diff, balanced, gross:g, net:n, vat:v, conf};
 
   $("jvMeta").innerHTML = `
     <div><b>${esc(t("jvRef"))}:</b> <span dir="ltr">${esc(ref)}</span></div>
     <div><b>${esc(t("jvDate"))}:</b> <span dir="ltr">${esc(invDate)}</span></div>
     <div><b>${esc(t("jvSup"))}:</b> ${esc(sup)}</div>
+    ${supCode ? `<div><b>${esc(t("jvSupCode"))}:</b> <span dir="ltr">${esc(supCode)}</span></div>` : ""}
     <div><b>${esc(t("jvInv"))}:</b> <span dir="ltr">${esc(invNo)}</span> · ${esc(curr)}</div>`;
 
   $("jvBody").innerHTML = rows.map(r=>`<tr>
@@ -794,7 +795,7 @@ $("copyBtn").addEventListener("click", ()=>{
   if (!currentJV) return;
   const j = currentJV;
   const w = 44;
-  let out = `${t("jvRef")}: ${j.ref}\n${t("jvDate")}: ${j.invDate}\n${t("jvSup")}: ${j.sup}\n${t("jvInv")}: ${j.invNo} (${j.curr})\n\n`;
+  let out = `${t("jvRef")}: ${j.ref}\n${t("jvDate")}: ${j.invDate}\n${t("jvSup")}: ${j.sup}\n${j.supCode ? `${t("jvSupCode")}: ${j.supCode}\n` : ""}${t("jvInv")}: ${j.invNo} (${j.curr})\n\n`;
   j.rows.forEach(r=>{
     const side = r.dr? t("drLine") : t("crLine");
     const amt = r.dr? r.dr : r.cr;
