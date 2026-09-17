@@ -18,7 +18,7 @@ Expected URL:
 
 ## Structure
 - `index.html` — bilingual website
-- `ap-jv/` — **AP Invoice → JV Tool** (Waves Hotel WHU): bilingual browser tool that extracts invoice data (ZATCA QR / PDF text / OCR / paste), runs deterministic VAT & duplicate checks, enforces GL account–department mapping (incl. Dept 6040 HR rules and 335xxx analysis codes), and generates a balanced Journal Voucher draft with a DRAFT SunSystems CSV export. 100% client-side — no data leaves the browser. Upload `Waves_Hotel_COA_Department_Reference.xlsx` inside the tool to enable the full 809-account COA (demo mode ships with only the confirmed accounts).
+- `ap-jv/` — **AP Invoice → JV Tool** (Waves Hotel WHU): bilingual browser tool that extracts invoice data (ZATCA QR / PDF text / OCR / paste), runs deterministic VAT & duplicate checks, enforces GL account–department mapping (incl. Dept 6040 HR rules and 335xxx analysis codes), and generates a balanced Journal Voucher draft with a DRAFT SunSystems CSV export. 100% client-side — no data leaves the browser. The August 2026 reference workbook is embedded at build time (departments, complete available COA, approved account-department mapping, and all 335xxx analysis codes), while the Excel upload remains available for future updates.
   - Live: `https://fawaztahir79.github.io/fawaz-portfolio/ap-jv/`
 - `style.css` — responsive design
 - `script.js` — Arabic/English language switcher with saved preference

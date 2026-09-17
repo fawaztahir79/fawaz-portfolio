@@ -43,7 +43,7 @@ rgDate:"تاريخ الحفظ", rgSup:"المورد", rgInv:"رقم الفاتو
 regCsv:"تصدير السجل CSV", regClear:"مسح السجل",
 footer:"أداة مساعدة للمحاسب — لا ترحيل آلي. أُعدت وفق منهجية 4D للهندسة التلقينية — فواز الطاهر أحمد عطية الله © 2026",
 /* dynamic */
-refDemo:"الوضع المرجعي: بيانات تجريبية (الحسابات المؤكدة من القسم 0.3/0.6 فقط). ارفع الملف الكامل لتفعيل 809 حسابًا و52 قسمًا.",
+refDemo:"الوضع المرجعي: بيانات تجريبية — ارفع ملف Excel لتحديث البيانات.",
 refFull:"الوضع المرجعي: الملف الكامل محمّل", accounts:"حساب", depts:"قسم", mappings:"ربط",
 qrTitle:"✔ تم قراءة QR (ZATCA TLV) — بيانات حتمية من الفاتورة:",
 qrSeller:"اسم البائع", qrVat:"الرقم الضريبي", qrTime:"التاريخ/الوقت", qrTotal:"الإجمالي شامل الضريبة", qrVatAmt:"مبلغ الضريبة",
@@ -113,7 +113,7 @@ s5Hint:"The register is stored only in your browser (localStorage) and drives du
 rgDate:"Saved at", rgSup:"Supplier", rgInv:"Invoice no.", rgInvDate:"Invoice date", rgGross:"Gross", rgRef:"JV ref",
 regCsv:"Export register CSV", regClear:"Clear register",
 footer:"Accountant-assist tool — no auto-posting. Built with the 4D Prompt Engineering Model — Fawaz Eltahir Ahmed Atiatallah © 2026",
-refDemo:"Reference mode: DEMO data (only the confirmed accounts from Section 0.3/0.6). Upload the full file to enable 809 accounts and 52 departments.",
+refDemo:"Reference mode: DEMO data — upload an Excel file to update the reference data.",
 refFull:"Reference mode: full file loaded", accounts:"accounts", depts:"departments", mappings:"mappings",
 qrTitle:"✔ QR decoded (ZATCA TLV) — deterministic data from the invoice:",
 qrSeller:"Seller name", qrVat:"VAT number", qrTime:"Timestamp", qrTotal:"Total incl. VAT", qrVatAmt:"VAT amount",
@@ -245,7 +245,7 @@ const DEMO_REF = {
     {code:"335025", name:"Visa costs for an ex-pat employee"}
   ]
 };
-let REF = DEMO_REF;
+let REF = FULL_REF;
 
 function hrCategory(acc){
   const n = parseInt(acc,10);
@@ -270,8 +270,8 @@ document.getElementById("refFile").addEventListener("change", async e=>{
   try{
     if (typeof XLSX === "undefined") throw new Error("xlsx lib not loaded");
     const wb = XLSX.read(await f.arrayBuffer(), {type:"array"});
-    const shDep = wb.SheetNames.find(n=>/depart/i.test(n));
-    const shMap = wb.SheetNames.find(n=>/mapping/i.test(n));
+    const shMap = wb.SheetNames.find(n=>/mapping/i.test(n)) || wb.SheetNames.find(n=>/p&l|final/i.test(n));
+    const shDep = wb.SheetNames.find(n=>/depart/i.test(n)) || shMap;
     const shHr  = wb.SheetNames.find(n=>/335|analysis/i.test(n));
     const next = {demo:false, departments:[], accounts:{}, mapping:{}, hrCodes:[]};
 
