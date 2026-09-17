@@ -167,7 +167,7 @@ function applyLang(){
   document.getElementById("langBtn").textContent = lang === "ar" ? "English" : "العربية";
   document.querySelectorAll("[data-i18n]").forEach(el=>{ el.textContent = t(el.dataset.i18n); });
   document.querySelectorAll("[data-i18n-ph]").forEach(el=>{ el.placeholder = t(el.dataset.i18nPh); });
-  renderRefStatus(); renderAlloc(); renderRegister();
+  renderRefStatus(); renderSuppliers(); renderAlloc(); renderRegister();
 }
 
 /* --------------------- REFERENCE DATA (DEMO SUBSET) ---------------------
@@ -256,10 +256,15 @@ function renderSuppliers(){
   const suppliers = FULL_REF.suppliers || [];
   const code = $("fSupCode"), name = $("fSupplier");
   if (!code || !name) return;
-  code.innerHTML = `<option value="">${esc(t("selSupplierCode"))}</option>` + suppliers.map(v=>`<option value="${esc(v.code)}">${esc(v.code)} — ${esc(v.name)}</option>`).join("");
-  name.innerHTML = `<option value="">${esc(t("selSupplier"))}</option>` + suppliers.map(v=>`<option value="${esc(v.name)}">${esc(v.name)} — ${esc(v.code)}</option>`).join("");
-  code.addEventListener("change",()=>{ const v=suppliers.find(x=>x.code===code.value); if(v) name.value=v.name; });
-  name.addEventListener("change",()=>{ const v=suppliers.find(x=>x.name===name.value); if(v) code.value=v.code; });
+  const selectedCode = code.value, selectedName = name.value;
+  // Keep each supplier dropdown focused on the field it represents:
+  // the code list shows codes only, and the name list shows names only.
+  code.innerHTML = `<option value="">${esc(t("selSupplierCode"))}</option>` + suppliers.map(v=>`<option value="${esc(v.code)}">${esc(v.code)}</option>`).join("");
+  name.innerHTML = `<option value="">${esc(t("selSupplier"))}</option>` + suppliers.map(v=>`<option value="${esc(v.name)}">${esc(v.name)}</option>`).join("");
+  if (suppliers.some(v=>v.code===selectedCode)) code.value = selectedCode;
+  if (suppliers.some(v=>v.name===selectedName)) name.value = selectedName;
+  code.onchange = ()=>{ const v=suppliers.find(x=>x.code===code.value); if(v) name.value=v.name; };
+  name.onchange = ()=>{ const v=suppliers.find(x=>x.name===name.value); if(v) code.value=v.code; };
 }
 
 function hrCategory(acc){
