@@ -43,7 +43,7 @@ rgDate:"تاريخ الحفظ", rgSup:"المورد", rgInv:"رقم الفاتو
 regCsv:"تصدير السجل CSV", regClear:"مسح السجل",
 footer:"أداة مساعدة للمحاسب — لا ترحيل آلي. أُعدت وفق منهجية 4D للهندسة التلقينية — فواز الطاهر أحمد عطية الله © 2026",
 /* dynamic */
-refDemo:"الوضع المرجعي: بيانات تجريبية (الحسابات المؤكدة من القسم 0.3/0.6 فقط). ارفع الملف الكامل لتفعيل 809 حسابًا و52 قسمًا.",
+refDemo:"الوضع المرجعي: بيانات تجريبية — ارفع ملف Excel لتحديث البيانات.",
 refFull:"الوضع المرجعي: الملف الكامل محمّل", accounts:"حساب", depts:"قسم", mappings:"ربط",
 qrTitle:"✔ تم قراءة QR (ZATCA TLV) — بيانات حتمية من الفاتورة:",
 qrSeller:"اسم البائع", qrVat:"الرقم الضريبي", qrTime:"التاريخ/الوقت", qrTotal:"الإجمالي شامل الضريبة", qrVatAmt:"مبلغ الضريبة",
@@ -59,6 +59,7 @@ vatNoWarn:"تحذير: الرقم الضريبي يجب أن يكون 15 خان�
 dupNone:"NO DUPLICATE FOUND — لا يوجد تكرار في السجل المحلي.",
 dupPossible:"POSSIBLE DUPLICATE — يوجد بالسجل فاتورة مشابهة (نفس المورد ونفس الرقم أو نفس المبلغ). مراجعة بشرية مطلوبة:",
 dupConfirmed:"CONFIRMED DUPLICATE — نفس المورد + نفس رقم الفاتورة + نفس المبلغ موجودة في السجل. POSTING BLOCKED حتى المراجعة.",
+selSupplier:"— اختر اسم المورد —", selSupplierCode:"— اختر كود المورد —",
 selAcc:"— اختر الحساب —", selDept:"— اختر القسم —", selAn:"— اختر كود التحليل —", anNotReq:"غير مطلوب لهذا القسم",
 noMapDept:"لا توجد أقسام مسموحة لهذا الحساب في ملف الربط — NO APPROVED COMBINATION — ESCALATION REQUIRED",
 catA:"فئة A — حساب رواتب/تكاليف نظامية (50000–55100): HIGH ATTENTION — يتطلب تأكيدًا أنه قيد رواتب وليس فاتورة مورد.",
@@ -94,6 +95,7 @@ dzText:"Drop the invoice here or click to browse (PDF / JPG / PNG)",
 ocrBtn:"Run OCR on image (optional)", sampleLink:"Download sample invoice (QR)", pasteLbl:"Or paste the invoice text here:",
 pastePh:"Paste invoice text (Arabic or English)...", parseBtn:"Parse text & fill fields", clearBtn:"Clear",
 s2Title:"Invoice Data & Validation",
+selSupplier:"— Select supplier name —", selSupplierCode:"— Select supplier code —",
 fSupplier:"Supplier name *", fSupCode:"Supplier code (if any)", fVatNo:"Supplier VAT number (15 digits)",
 fInvNo:"Invoice number *", fInvDate:"Invoice date *", fDueDate:"Due date", fPO:"PO number",
 fCurr:"Currency", fDesc:"Invoice description *", fRate:"Tax treatment",
@@ -113,7 +115,7 @@ s5Hint:"The register is stored only in your browser (localStorage) and drives du
 rgDate:"Saved at", rgSup:"Supplier", rgInv:"Invoice no.", rgInvDate:"Invoice date", rgGross:"Gross", rgRef:"JV ref",
 regCsv:"Export register CSV", regClear:"Clear register",
 footer:"Accountant-assist tool — no auto-posting. Built with the 4D Prompt Engineering Model — Fawaz Eltahir Ahmed Atiatallah © 2026",
-refDemo:"Reference mode: DEMO data (only the confirmed accounts from Section 0.3/0.6). Upload the full file to enable 809 accounts and 52 departments.",
+refDemo:"Reference mode: DEMO data — upload an Excel file to update the reference data.",
 refFull:"Reference mode: full file loaded", accounts:"accounts", depts:"departments", mappings:"mappings",
 qrTitle:"✔ QR decoded (ZATCA TLV) — deterministic data from the invoice:",
 qrSeller:"Seller name", qrVat:"VAT number", qrTime:"Timestamp", qrTotal:"Total incl. VAT", qrVatAmt:"VAT amount",
@@ -245,7 +247,20 @@ const DEMO_REF = {
     {code:"335025", name:"Visa costs for an ex-pat employee"}
   ]
 };
-let REF = DEMO_REF;
+let REF = FULL_REF;
+
+// The script is loaded at the end of the document; initialize after all helpers are defined.
+window.addEventListener("load", renderSuppliers);
+
+function renderSuppliers(){
+  const suppliers = FULL_REF.suppliers || [];
+  const code = $("fSupCode"), name = $("fSupplier");
+  if (!code || !name) return;
+  code.innerHTML = `<option value="">${esc(t("selSupplierCode"))}</option>` + suppliers.map(v=>`<option value="${esc(v.code)}">${esc(v.code)} — ${esc(v.name)}</option>`).join("");
+  name.innerHTML = `<option value="">${esc(t("selSupplier"))}</option>` + suppliers.map(v=>`<option value="${esc(v.name)}">${esc(v.name)} — ${esc(v.code)}</option>`).join("");
+  code.addEventListener("change",()=>{ const v=suppliers.find(x=>x.code===code.value); if(v) name.value=v.name; });
+  name.addEventListener("change",()=>{ const v=suppliers.find(x=>x.name===name.value); if(v) code.value=v.code; });
+}
 
 function hrCategory(acc){
   const n = parseInt(acc,10);
@@ -270,8 +285,8 @@ document.getElementById("refFile").addEventListener("change", async e=>{
   try{
     if (typeof XLSX === "undefined") throw new Error("xlsx lib not loaded");
     const wb = XLSX.read(await f.arrayBuffer(), {type:"array"});
-    const shDep = wb.SheetNames.find(n=>/depart/i.test(n));
-    const shMap = wb.SheetNames.find(n=>/mapping/i.test(n));
+    const shMap = wb.SheetNames.find(n=>/mapping/i.test(n)) || wb.SheetNames.find(n=>/p&l|final/i.test(n));
+    const shDep = wb.SheetNames.find(n=>/depart/i.test(n)) || shMap;
     const shHr  = wb.SheetNames.find(n=>/335|analysis/i.test(n));
     const next = {demo:false, departments:[], accounts:{}, mapping:{}, hrCodes:[]};
 

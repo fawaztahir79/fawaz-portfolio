@@ -58,8 +58,8 @@
 <section class="step">
   <h2><span class="stepno">2</span><span data-i18n="s2Title">بيانات الفاتورة والتحقق</span></h2>
   <div class="formgrid">
-    <div class="fld"><label data-i18n="fSupplier">اسم المورد *</label><input id="fSupplier" type="text"></div>
-    <div class="fld"><label data-i18n="fSupCode">كود المورد (إن وجد)</label><input id="fSupCode" type="text"></div>
+    <div class="fld"><label data-i18n="fSupplier">اسم المورد *</label><select id="fSupplier"><option value="">— اختر المورد —</option></select></div>
+    <div class="fld"><label data-i18n="fSupCode">كود المورد (إن وجد)</label><select id="fSupCode"><option value="">— اختر كود المورد —</option></select></div>
     <div class="fld"><label data-i18n="fVatNo">الرقم الضريبي للمورد (15 خانة)</label><input id="fVatNo" type="text" inputmode="numeric"></div>
     <div class="fld"><label data-i18n="fInvNo">رقم الفاتورة *</label><input id="fInvNo" type="text"></div>
     <div class="fld"><label data-i18n="fInvDate">تاريخ الفاتورة *</label><input id="fInvDate" type="date"></div>
@@ -168,6 +168,7 @@
 <script src="vendor/jsQR.js"></script>
 <script src="vendor/pdf.min.js"></script>
 <script src="vendor/xlsx.full.min.js"></script>
+<script src="reference-data.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
