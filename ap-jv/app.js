@@ -59,6 +59,7 @@ vatNoWarn:"تحذير: الرقم الضريبي يجب أن يكون 15 خان�
 dupNone:"NO DUPLICATE FOUND — لا يوجد تكرار في السجل المحلي.",
 dupPossible:"POSSIBLE DUPLICATE — يوجد بالسجل فاتورة مشابهة (نفس المورد ونفس الرقم أو نفس المبلغ). مراجعة بشرية مطلوبة:",
 dupConfirmed:"CONFIRMED DUPLICATE — نفس المورد + نفس رقم الفاتورة + نفس المبلغ موجودة في السجل. POSTING BLOCKED حتى المراجعة.",
+selSupplier:"— اختر اسم المورد —", selSupplierCode:"— اختر كود المورد —",
 selAcc:"— اختر الحساب —", selDept:"— اختر القسم —", selAn:"— اختر كود التحليل —", anNotReq:"غير مطلوب لهذا القسم",
 noMapDept:"لا توجد أقسام مسموحة لهذا الحساب في ملف الربط — NO APPROVED COMBINATION — ESCALATION REQUIRED",
 catA:"فئة A — حساب رواتب/تكاليف نظامية (50000–55100): HIGH ATTENTION — يتطلب تأكيدًا أنه قيد رواتب وليس فاتورة مورد.",
@@ -246,6 +247,18 @@ const DEMO_REF = {
   ]
 };
 let REF = FULL_REF;
+
+document.addEventListener("DOMContentLoaded", renderSuppliers);
+
+function renderSuppliers(){
+  const suppliers = FULL_REF.suppliers || [];
+  const code = $("fSupCode"), name = $("fSupplier");
+  if (!code || !name) return;
+  code.innerHTML = `<option value="">${esc(t("selSupplierCode"))}</option>` + suppliers.map(v=>`<option value="${esc(v.code)}">${esc(v.code)} — ${esc(v.name)}</option>`).join("");
+  name.innerHTML = `<option value="">${esc(t("selSupplier"))}</option>` + suppliers.map(v=>`<option value="${esc(v.name)}">${esc(v.name)} — ${esc(v.code)}</option>`).join("");
+  code.addEventListener("change",()=>{ const v=suppliers.find(x=>x.code===code.value); if(v) name.value=v.name; });
+  name.addEventListener("change",()=>{ const v=suppliers.find(x=>x.name===name.value); if(v) code.value=v.code; });
+}
 
 function hrCategory(acc){
   const n = parseInt(acc,10);
