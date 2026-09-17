@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Disallow: /cv/
+Sitemap: https://fawaztahir79.github.io/fawaz-portfolio/sitemap.xml
