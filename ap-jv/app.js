@@ -5,6 +5,12 @@
    ========================================================================= */
 "use strict";
 
+/* Surface unexpected errors instead of failing silently */
+window.addEventListener("error", e=>{
+  const el = document.getElementById("docStatus");
+  if (el) el.textContent = "⚠ JS ERROR: " + (e.message||"") + (e.filename?` — ${e.filename.split("/").pop()}:${e.lineno}`:"");
+});
+
 /* ------------------------------- i18n ---------------------------------- */
 const I = {
 ar:{
@@ -262,6 +268,7 @@ function renderRefStatus(){
 document.getElementById("refFile").addEventListener("change", async e=>{
   const f = e.target.files[0]; if(!f) return;
   try{
+    if (typeof XLSX === "undefined") throw new Error("xlsx lib not loaded");
     const wb = XLSX.read(await f.arrayBuffer(), {type:"array"});
     const shDep = wb.SheetNames.find(n=>/depart/i.test(n));
     const shMap = wb.SheetNames.find(n=>/mapping/i.test(n));
@@ -394,7 +401,7 @@ async function handleImageFile(file){
 
 async function handlePdfFile(file){
   if (typeof pdfjsLib === "undefined"){ setDocStatus(t("noQr")); return; }
-  pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "vendor/pdf.worker.min.js";
   const pdf = await pdfjsLib.getDocument({data: await file.arrayBuffer()}).promise;
   let qrFound = false, textAll = "";
   const pages = Math.min(pdf.numPages, 3);
@@ -742,7 +749,7 @@ $("buildBtn").addEventListener("click", ()=>{
     chk("warn", t("approval"));
 
   $("jvWrap").hidden = false;
-  $("jvWrap").scrollIntoView({behavior:"smooth"});
+  if ($("jvWrap").scrollIntoView) $("jvWrap").scrollIntoView({behavior:"smooth"});
 });
 
 /* ------------------------------ exports --------------------------------- */
