@@ -249,7 +249,8 @@ const DEMO_REF = {
 };
 let REF = FULL_REF;
 
-document.addEventListener("DOMContentLoaded", renderSuppliers);
+// The script is loaded at the end of the document; initialize after all helpers are defined.
+window.addEventListener("load", renderSuppliers);
 
 function renderSuppliers(){
   const suppliers = FULL_REF.suppliers || [];
