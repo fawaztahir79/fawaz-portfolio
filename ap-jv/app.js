@@ -23,7 +23,7 @@ dzText:"اسحب الفاتورة هنا أو اضغط للاختيار (PDF / J
 ocrBtn:"تشغيل OCR على الصورة (اختياري)", sampleLink:"تنزيل فاتورة تجريبية (QR)", pasteLbl:"أو الصق نص الفاتورة هنا:",
 pastePh:"الصق نص الفاتورة (عربي أو إنجليزي)...", parseBtn:"تحليل النص وتعبئة الحقول", clearBtn:"مسح",
 s2Title:"بيانات الفاتورة والتحقق",
-fSupplier:"اسم المورد *", fSupCode:"كود المورد (إن وجد)", fVatNo:"الرقم الضريبي للمورد (15 خانة)",
+    fSupplier:"اسم المورد *", fSupCode:"كود المورد *", fVatNo:"الرقم الضريبي للمورد (15 خانة)",
 fInvNo:"رقم الفاتورة *", fInvDate:"تاريخ الفاتورة *", fDueDate:"تاريخ الاستحقاق", fPO:"رقم أمر الشراء PO",
 fCurr:"العملة", fDesc:"وصف الفاتورة *", fRate:"المعاملة الضريبية",
 rate15:"15% ضريبة قيمة مضافة قياسية", rate0:"0% / معفاة — بدون ضريبة", rate5:"5% رسم إشغال بلدي (تنبيه — ليست VAT)",
@@ -96,7 +96,7 @@ ocrBtn:"Run OCR on image (optional)", sampleLink:"Download sample invoice (QR)",
 pastePh:"Paste invoice text (Arabic or English)...", parseBtn:"Parse text & fill fields", clearBtn:"Clear",
 s2Title:"Invoice Data & Validation",
 selSupplier:"— Select supplier name —", selSupplierCode:"— Select supplier code —",
-fSupplier:"Supplier name *", fSupCode:"Supplier code (if any)", fVatNo:"Supplier VAT number (15 digits)",
+    fSupplier:"Supplier name *", fSupCode:"Supplier code *", fVatNo:"Supplier VAT number (15 digits)",
 fInvNo:"Invoice number *", fInvDate:"Invoice date *", fDueDate:"Due date", fPO:"PO number",
 fCurr:"Currency", fDesc:"Invoice description *", fRate:"Tax treatment",
 rate15:"15% standard VAT", rate0:"0% / exempt — no VAT", rate5:"5% Municipal Occupancy Fee (NOT VAT)",
@@ -567,7 +567,7 @@ $("calcBtn").addEventListener("click", ()=>{
 
 function invoiceIssues(){
   const issues = {errors:[], warns:[], infos:[]};
-  const reqd = [["fSupplier","fSupplier"],["fInvNo","fInvNo"],["fInvDate","fInvDate"],["fDesc","fDesc"],["fNet","fNet"],["fGross","fGross"]];
+  const reqd = [["fSupplier","fSupplier"],["fSupCode","fSupCode"],["fInvNo","fInvNo"],["fInvDate","fInvDate"],["fDesc","fDesc"],["fNet","fNet"],["fGross","fGross"]];
   const missing = reqd.filter(([id])=>!$(id).value.trim()).map(([,k])=>t(k).replace(" *",""));
   if (missing.length) issues.errors.push(`MISSING INFORMATION — ${t("missing")}: ${missing.join("، ")} — ${t("whyMatters")}.`);
 
@@ -712,7 +712,7 @@ $("buildBtn").addEventListener("click", ()=>{
   }
   const rateSel = $("fRate").value;
   const n = num("fNet"), v = num("fVat")||0, g = num("fGross");
-  const sup = $("fSupplier").value.trim(), invNo = $("fInvNo").value.trim(), invDate = $("fInvDate").value;
+  const sup = $("fSupplier").value.trim(), supCode = $("fSupCode").value.trim(), invNo = $("fInvNo").value.trim(), invDate = $("fInvDate").value;
   const desc = $("fDesc").value.trim(), curr = $("fCurr").value;
   const ref = "APJV-" + invDate.replace(/-/g,"") + "-" + invNo.replace(/[^A-Za-z0-9]/g,"").slice(-8).toUpperCase();
 
@@ -727,7 +727,8 @@ $("buildBtn").addEventListener("click", ()=>{
     // non-standard tax (e.g. 5% municipal fee): keep in expense? No — require review, add as warning-tagged debit line to first expense account is NOT allowed silently.
     rows.push({acc:"", name:t("uncertain"), dept:"", an:"", dr:r2(v), cr:0, desc:t("muniWarn"), uncertain:true});
   }
-  rows.push({acc:CONTROL.AP_CONTROL, name:REF.accounts[CONTROL.AP_CONTROL]?REF.accounts[CONTROL.AP_CONTROL].desc:"Supplier / Trade Payables", dept:"", an:"", dr:0, cr:r2(g), desc:`${t("apLineDesc")} — ${sup} ${invNo}`});
+  // The supplier subledger code is the payable line code; do not replace it with the GL AP control account.
+  rows.push({acc:supCode, name:sup, dept:"", an:"", dr:0, cr:r2(g), desc:`${t("apLineDesc")} — ${sup} (${supCode}) ${invNo}`, supplierCode:supCode});
 
   const totDr = r2(rows.reduce((s,r)=>s+r.dr,0));
   const totCr = r2(rows.reduce((s,r)=>s+r.cr,0));
@@ -741,12 +742,12 @@ $("buildBtn").addEventListener("click", ()=>{
   const confCls = conf>=95?"hi":conf>=80?"md":"lo";
   const confTxt = conf>=95?t("confHi"):conf>=80?t("confMd"):t("confLo");
 
-  currentJV = {ref, invDate, sup, invNo, curr, rows, totDr, totCr, diff, balanced, gross:g, net:n, vat:v, conf};
+  currentJV = {ref, invDate, sup, supCode, invNo, curr, rows, totDr, totCr, diff, balanced, gross:g, net:n, vat:v, conf};
 
   $("jvMeta").innerHTML = `
     <div><b>${esc(t("jvRef"))}:</b> <span dir="ltr">${esc(ref)}</span></div>
     <div><b>${esc(t("jvDate"))}:</b> <span dir="ltr">${esc(invDate)}</span></div>
-    <div><b>${esc(t("jvSup"))}:</b> ${esc(sup)}</div>
+    <div><b>${esc(t("jvSup"))}:</b> ${esc(sup)} · <span dir="ltr">${esc(supCode)}</span></div>
     <div><b>${esc(t("jvInv"))}:</b> <span dir="ltr">${esc(invNo)}</span> · ${esc(curr)}</div>`;
 
   $("jvBody").innerHTML = rows.map(r=>`<tr>
