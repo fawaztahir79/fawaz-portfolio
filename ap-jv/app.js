@@ -499,14 +499,15 @@ function parseInvoiceText(raw){
   if (po) $("fPO").value = po;
 
   const gross = pick([
-    /(?:grand\s*total|total\s*(?:amount)?\s*(?:incl|with|including)[^0-9]*|الإجمالي\s*(?:شامل|مع)[^0-9]*|المجموع\s*الكلي[^0-9]*)([\d,]+\.?\d*)/i,
-    /(?:total\s*due|amount\s*due)[^0-9]*([\d,]+\.?\d*)/i
+    /(?:grand\s*total|total\s*(?:amount)?\s*(?:incl|with|including)|الإجمالي\s*(?:شامل|مع)|المجموع\s*الكلي)[^0-9]*?([\d,]+\.\d{1,2}|[\d,]{1,12})/i,
+    /(?:total\s*due|amount\s*due)[^0-9]*?([\d,]+\.?\d*)/i
   ]);
   const vat = pick([
-    /(?:vat|tax|ضريبة(?:\s*القيمة\s*المضافة)?)[^0-9%]*(?:15\s*%)?[^0-9]*([\d,]+\.?\d*)/i
+    /(?:vat|tax|ضريبة(?:\s*القيمة\s*المضافة)?)(?!\s*(?:number|no\.?|reg|الرقم|رقم))[^0-9%\n]*(?:15\s*%)?[^0-9\n]*?([\d,]+\.\d{1,2})/i,
+    /(?:vat|tax|ضريبة(?:\s*القيمة\s*المضافة)?)(?!\s*(?:number|no\.?|reg|الرقم|رقم))[^0-9%\n]*(?:15\s*%)?[^0-9\n]*?([\d,]{1,9})\b/i
   ]);
   const net = pick([
-    /(?:sub\s*total|subtotal|net\s*(?:amount)?|الصافي|المجموع\s*الفرعي|الإجمالي\s*قبل)[^0-9]*([\d,]+\.?\d*)/i
+    /(?:sub\s*total|subtotal|net\s*(?:amount)?|الصافي|المجموع\s*الفرعي|الإجمالي\s*قبل)[^0-9]*?([\d,]+\.?\d*)/i
   ]);
   const g = parseAmount(gross), v = parseAmount(vat), n = parseAmount(net);
   if (n!==null) $("fNet").value = n.toFixed(2);
