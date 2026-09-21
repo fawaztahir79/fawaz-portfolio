@@ -40,7 +40,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid #bcd9ea;border-color:v
 .ghost{background:#fff;border:1px solid #c4d0da;color:var(--muted)}
 .danger{color:var(--err);border-color:#e3b6b3}
 .filelbl{display:inline-block;cursor:pointer}
-.doc-status{font-size:12.5px;margin-top:10px;color:var(--muted);white-space:pre-line}
+.invoice-queue{margin-top:12px;border:1px solid var(--line);border-radius:10px;padding:11px;background:#fbfcfd}.queue-head{display:flex;justify-content:space-between;gap:8px;color:var(--navy);font-size:13px}.queue-actions{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0}.queue-actions .btn{padding:7px 10px;font-size:12px}.queue-table-wrap{overflow:auto}.queue-table{min-width:680px}.queue-table tbody tr{cursor:pointer}.queue-table tbody tr:hover td{background:#eef6fb}.queue-table tbody tr.active td{background:#e8f3fa;font-weight:700}.queue-table td{white-space:nowrap}.doc-status{font-size:12.5px;margin-top:10px;color:var(--muted);white-space:pre-line}
 .qr-box{margin-top:12px;background:#eef8f1;border:1px solid #bfe0cb;border-radius:10px;padding:12px 14px;font-size:12.5px}
 .qr-box h4{margin:0 0 6px;color:var(--ok);font-size:13px}
 .formgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:13px}
@@ -107,13 +107,22 @@ footer{padding:26px 0 34px;text-align:center;color:var(--muted);font-size:12px}
       <div id="dropzone" class="dropzone" role="button" tabindex="0">
         <div class="dz-icon">📄</div>
         <div data-i18n="dzText">اسحب الفاتورة هنا أو اضغط للاختيار (PDF / JPG / PNG)</div>
-        <input type="file" id="fileInput" accept=".pdf,image/*" hidden>
+        <input type="file" id="fileInput" accept=".pdf,image/*" multiple hidden>
       </div>
       <div class="btnrow">
         <button id="ocrBtn" class="btn ghost" type="button" data-i18n="ocrBtn">تشغيل OCR على الصورة (اختياري)</button>
         <a class="btn ghost" href="sample_invoice_qr.png" download data-i18n="sampleLink">تنزيل فاتورة تجريبية (QR)</a>
       </div>
       <div id="docStatus" class="doc-status" role="status" aria-live="polite"></div>
+      <div id="invoiceQueue" class="invoice-queue" hidden>
+        <div class="queue-head"><strong data-i18n="queueTitle">الفواتير المقروءة</strong><span id="queueCount"></span></div>
+        <div class="queue-actions">
+          <button id="queuePrev" class="btn ghost" type="button" data-i18n="queuePrev">السابق</button>
+          <button id="queueNext" class="btn ghost" type="button" data-i18n="queueNext">التالي</button>
+          <button id="queueCsv" class="btn secondary" type="button" data-i18n="queueCsv">تصدير البيانات المستخرجة CSV</button>
+        </div>
+        <div class="queue-table-wrap"><table class="jv queue-table"><thead><tr><th data-i18n="qFile">الملف</th><th data-i18n="qSupplier">المورد</th><th data-i18n="qInvoice">رقم الفاتورة</th><th data-i18n="qDate">التاريخ</th><th data-i18n="qGross">الإجمالي</th><th data-i18n="qStatus">الحالة</th></tr></thead><tbody id="queueBody"></tbody></table></div>
+      </div>
       <div id="qrResult" class="qr-box" hidden></div>
       <canvas id="workCanvas" hidden></canvas>
     </div>
@@ -274,7 +283,7 @@ s1Title:"مستند الفاتورة — الاستخلاص",
 s1Hint:"ارفع صورة أو PDF للفاتورة (تُقرأ محليًا في متصفحك ولا تُرسل لأي خادم). تُقرأ بيانات رمز QR الخاص بفواتير هيئة الزكاة (ZATCA) بشكل حتمي، ويُحلَّل نص الفاتورة لتعبئة الحقول تلقائيًا — مع وجوب المراجعة البشرية.",
 dzText:"اسحب الفاتورة هنا أو اضغط للاختيار (PDF / JPG / PNG)",
 ocrBtn:"تشغيل OCR على الصورة (اختياري)", ocrBtnBusy:"جارٍ التشغيل...", sampleLink:"تنزيل فاتورة تجريبية (QR)", pasteLbl:"أو الصق نص الفاتورة هنا:",
-pastePh:"الصق نص الفاتورة (عربي أو إنجليزي)...", parseBtn:"تحليل النص وتعبئة الحقول", clearBtn:"مسح",
+pastePh:"الصق نص الفاتورة (عربي أو إنجليزي)...", parseBtn:"تحليل النص وتعبئة الحقول", clearBtn:"مسح", queueTitle:"الفواتير المقروءة", queuePrev:"السابق", queueNext:"التالي", queueCsv:"تصدير البيانات المستخرجة CSV", qFile:"الملف", qSupplier:"المورد", qInvoice:"رقم الفاتورة", qDate:"التاريخ", qGross:"الإجمالي", qStatus:"الحالة", qReady:"تم الاستخراج — راجع الحقول", qMissing:"بيانات ناقصة — تحتاج مراجعة",
 s2Title:"بيانات الفاتورة والتحقق",
 fSupplier:"اسم المورد *", fSupCode:"كود المورد (إن وجد)", fVatNo:"الرقم الضريبي للمورد (15 خانة)",
 fInvNo:"رقم الفاتورة *", fInvDate:"تاريخ الفاتورة *", fDueDate:"تاريخ الاستحقاق", fPO:"رقم أمر الشراء PO",
@@ -352,7 +361,7 @@ s1Title:"Invoice Document — Extraction",
 s1Hint:"Upload an invoice image or PDF (processed locally in your browser — nothing is sent to any server). ZATCA e-invoice QR codes are decoded deterministically, and invoice text is parsed to pre-fill the fields — human review is mandatory.",
 dzText:"Drop the invoice here or click to browse (PDF / JPG / PNG)",
 ocrBtn:"Run OCR on image (optional)", ocrBtnBusy:"Running...", sampleLink:"Download sample invoice (QR)", pasteLbl:"Or paste the invoice text here:",
-pastePh:"Paste invoice text (Arabic or English)...", parseBtn:"Parse text & fill fields", clearBtn:"Clear",
+pastePh:"Paste invoice text (Arabic or English)...", parseBtn:"Parse text & fill fields", clearBtn:"Clear", queueTitle:"Invoices read", queuePrev:"Previous", queueNext:"Next", queueCsv:"Export extracted data CSV", qFile:"File", qSupplier:"Supplier", qInvoice:"Invoice no.", qDate:"Date", qGross:"Gross", qStatus:"Status", qReady:"Extracted — review fields", qMissing:"Missing data — review required",
 s2Title:"Invoice Data & Validation",
 fSupplier:"Supplier name *", fSupCode:"Supplier code (if any)", fVatNo:"Supplier VAT number (15 digits)",
 fInvNo:"Invoice number *", fInvDate:"Invoice date *", fDueDate:"Due date", fPO:"PO number",
@@ -693,7 +702,7 @@ async function handlePdfFile(file){
   pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
   const pdf = await pdfjsLib.getDocument({data: await file.arrayBuffer()}).promise;
   let qrFound = false, textAll = "";
-  const pages = Math.min(pdf.numPages, 3);
+  const pages = pdf.numPages;
   for (let p=1;p<=pages;p++){
     const page = await pdf.getPage(p);
     const tc = await page.getTextContent();
@@ -719,8 +728,8 @@ dz.addEventListener("click", ()=>$("fileInput").click());
 dz.addEventListener("keydown", e=>{ if (e.key==="Enter"||e.key===" "){ e.preventDefault(); $("fileInput").click(); } });
 dz.addEventListener("dragover", e=>{ e.preventDefault(); dz.classList.add("drag"); });
 dz.addEventListener("dragleave", ()=>dz.classList.remove("drag"));
-dz.addEventListener("drop", e=>{ e.preventDefault(); dz.classList.remove("drag"); if(e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
-$("fileInput").addEventListener("change", e=>{ if(e.target.files[0]) handleFile(e.target.files[0]); });
+dz.addEventListener("drop", e=>{ e.preventDefault(); dz.classList.remove("drag"); if(e.dataTransfer.files.length) handleFiles(Array.from(e.dataTransfer.files)); });
+$("fileInput").addEventListener("change", e=>{ if(e.target.files.length) handleFiles(Array.from(e.target.files)); });
 
 /* Errors are no longer swallowed into a generic "no QR" message: a library
    failing to load or a genuinely corrupt file now shows a distinct,
@@ -822,9 +831,63 @@ function parseInvoiceText(raw){
     const line = text.split(/\n/).map(s=>s.trim()).find(s=>s.length>3 && !/\d{4,}/.test(s) && !/invoice|فاتورة|vat|ضريب/i.test(s));
     if (line) $("fSupplier").value = line;
   }
+  if (!$("fDesc").value){
+    const firstUseful = text.split(/\n/).map(s=>s.trim()).find(s=>s.length>3 && !/invoice|فاتورة|tax|vat|ضريب|total|الإجمالي|subtotal|الصافي/i.test(s) && !/^\d/.test(s));
+    $("fDesc").value = firstUseful ? firstUseful.slice(0,120) : ($("fInvNo").value ? `Invoice ${$("fInvNo").value}` : "Invoice");
+  }
   setDocStatus(t("parsedInto"));
   validateInvoice();
+  return snapshotExtractedInvoice();
 }
+
+let invoiceQueue = [], activeQueueIndex = 0;
+function snapshotExtractedInvoice(fileName=""){
+  const data = {file:fileName, supplier:$("fSupplier").value.trim(), vatNo:$("fVatNo").value.trim(), invoiceNo:$("fInvNo").value.trim(), date:$("fInvDate").value, dueDate:$("fDueDate").value, po:$("fPO").value.trim(), currency:$("fCurr").value, description:$("fDesc").value.trim(), net:num("fNet"), vat:num("fVat")||0, gross:num("fGross")};
+  data.ready = !!(data.supplier && data.invoiceNo && data.date && data.description && data.net!==null && data.gross!==null);
+  return data;
+}
+function loadQueueItem(i){
+  if (!invoiceQueue.length) return;
+  activeQueueIndex = (i + invoiceQueue.length) % invoiceQueue.length;
+  const d = invoiceQueue[activeQueueIndex];
+  $("fSupplier").value=d.supplier||""; $("fVatNo").value=d.vatNo||""; $("fInvNo").value=d.invoiceNo||""; $("fInvDate").value=d.date||""; $("fDueDate").value=d.dueDate||""; $("fPO").value=d.po||""; $("fCurr").value=d.currency||"SAR"; $("fDesc").value=d.description||""; $("fNet").value=d.net??""; $("fVat").value=d.vat??""; $("fGross").value=d.gross??"";
+  validateInvoice(); renderInvoiceQueue();
+}
+function renderInvoiceQueue(){
+  const box=$("invoiceQueue"), body=$("queueBody"); if (!box||!body) return;
+  box.hidden=!invoiceQueue.length; $("queueCount").textContent=invoiceQueue.length ? `${activeQueueIndex+1} / ${invoiceQueue.length}` : "";
+  body.innerHTML=invoiceQueue.map((d,i)=>`<tr class="${i===activeQueueIndex?"active":""}" data-q="${i}"><td dir="ltr">${esc(d.file)}</td><td>${esc(d.supplier||"—")}</td><td dir="ltr">${esc(d.invoiceNo||"—")}</td><td dir="ltr">${esc(d.date||"—")}</td><td dir="ltr">${d.gross===null?"—":fmt(d.gross)}</td><td>${d.ready?`<span class="badge hi">${esc(t("qReady"))}</span>`:`<span class="badge lo">${esc(t("qMissing"))}</span>`}</td></tr>`).join("");
+  body.querySelectorAll("[data-q]").forEach(row=>row.addEventListener("click",()=>loadQueueItem(+row.dataset.q)));
+}
+function clearExtractionFields(){ ["fSupplier","fVatNo","fInvNo","fInvDate","fDueDate","fPO","fDesc","fNet","fVat","fGross"].forEach(id=>$(id).value=""); $("qrResult").hidden=true; lastImageDataUrl=null; }
+async function ensureOcrText(){
+  if (!lastImageDataUrl) return "";
+  if (typeof Tesseract === "undefined") await new Promise((res,rej)=>{ const s=document.createElement("script"); s.src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"; s.onload=res; s.onerror=rej; document.head.appendChild(s); });
+  const {data}=await Tesseract.recognize(lastImageDataUrl,"ara+eng"); return data.text||"";
+}
+async function handleFiles(files){
+  const usable=files.filter(f=>f.type==="application/pdf"||f.type.startsWith("image/")||/\.pdf$/i.test(f.name));
+  if (!usable.length) return;
+  invoiceQueue=[]; activeQueueIndex=0; renderInvoiceQueue();
+  for (let i=0;i<usable.length;i++){
+    const file=usable[i]; clearExtractionFields(); setDocStatus(`${i+1}/${usable.length} — ${file.name}`);
+    try{
+      const isPdf=file.type==="application/pdf"||/\.pdf$/i.test(file.name);
+      await handleFile(file);
+      if (!isPdf){
+        const ocr=await ensureOcrText(); if (ocr.trim()){ $("pasteText").value=ocr; parseInvoiceText(ocr); }
+      }
+      invoiceQueue.push(snapshotExtractedInvoice(file.name));
+      renderInvoiceQueue();
+    }catch(e){ invoiceQueue.push({...snapshotExtractedInvoice(file.name), ready:false}); renderInvoiceQueue(); }
+  }
+  if (invoiceQueue.length) loadQueueItem(0);
+  setDocStatus(`${invoiceQueue.length} — ${t("parsedInto")}`);
+}
+$("queuePrev").addEventListener("click",()=>loadQueueItem(activeQueueIndex-1));
+$("queueNext").addEventListener("click",()=>loadQueueItem(activeQueueIndex+1));
+$("queueCsv").addEventListener("click",()=>{ if(!invoiceQueue.length)return; const cols=["File","Supplier","VATNo","InvoiceNo","InvoiceDate","DueDate","PO","Currency","Description","Net","VAT","Gross","Ready"]; dl("extracted_invoices.csv",cols.join(",")+"\n"+invoiceQueue.map(d=>[d.file,d.supplier,d.vatNo,d.invoiceNo,d.date,d.dueDate,d.po,d.currency,d.description,d.net,d.vat,d.gross,d.ready].map(csvCell).join(",")).join("\n")); });
+
 $("parseBtn").addEventListener("click", ()=>{ const v=$("pasteText").value; if(v.trim()) parseInvoiceText(v); });
 $("clearDocBtn").addEventListener("click", ()=>{
   ["pasteText","fSupplier","fSupCode","fVatNo","fInvNo","fInvDate","fDueDate","fPO","fDesc","fNet","fVat","fGross"].forEach(id=>$(id).value="");
