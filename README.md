@@ -1,32 +1,32 @@
-# Fawaz Eltahir — Bilingual GitHub Pages Portfolio
+# مبادرة علاج الخالة حليوة حامد مستور
 
-Arabic + English portfolio in one responsive website.
+صفحة عربية متجاوبة لمبادرة مجتمعية تهدف إلى دعم تكاليف علاج وعملية الخالة حليوة حامد مستور.
 
-## Repository
-`fawaztahir79/fawaz-portfolio`
+## المزايا
 
-## GitHub Pages
-1. Upload the contents of this folder to the repository root.
-2. Commit to `main`.
-3. Go to **Settings → Pages**.
-4. Select **Deploy from a branch**.
-5. Branch: `main`; folder: `/(root)`.
-6. Save.
+- تصميم عربي كامل من اليمين إلى اليسار (RTL)
+- عرض واضح للحالة الصحية وبيانات المساهمة
+- زر لنسخ رقم حساب بنكك
+- رابط مباشر إلى مجموعة المبادرة على واتساب
+- كشف كامل وقابل للبحث للمساهمات الـ33 المسجلة
+- طباعة الكشف أو حفظه بصيغة PDF
+- مشاركة الصفحة باستخدام ميزة المشاركة الأصلية في الجهاز
+- تصميم متجاوب ومحسّن للجوال والطباعة وإمكانية الوصول
 
-Expected URL:
-`https://fawaztahir79.github.io/fawaz-portfolio/`
+## الملفات الرئيسية
 
-## Structure
-- `index.html` — bilingual website
-- `ap-jv/` — **AP Invoice → JV Tool** (Waves Hotel WHU): bilingual browser tool that extracts invoice data (ZATCA QR / PDF text / OCR / paste), runs deterministic VAT & duplicate checks, enforces GL account–department mapping (incl. Dept 6040 HR rules and 335xxx analysis codes), and generates a balanced Journal Voucher draft with a DRAFT SunSystems CSV export. 100% client-side — no data leaves the browser. The August 2026 reference workbook is embedded at build time (departments, complete available COA, approved account-department mapping, and all 335xxx analysis codes), while the Excel upload remains available for future updates.
-  - Live: `https://fawaztahir79.github.io/fawaz-portfolio/ap-jv/`
-- `style.css` — responsive design
-- `script.js` — Arabic/English language switcher with saved preference
-- `assets/profile.png` — profile photo
-- `cv/Fawaz_Eltahir_Visual_CV_2026.pdf` — linked visual CV
+- `index.html` — محتوى صفحة المبادرة
+- `style.css` — التصميم المتجاوب وأنماط الطباعة
+- `script.js` — النسخ والمشاركة والبحث والطباعة وقائمة الهاتف
 
-## Language
-English is the default. The Arabic button switches the entire interface to RTL Arabic. The selection is saved in the browser.
+## أداة AP Invoice → JV
 
-LinkedIn:
-https://www.linkedin.com/in/fawazatiatallah
+تظل أداة الفواتير والقيد المحاسبي الحالية متاحة في المسار `ap-jv/`.
+
+## التشغيل محليًا
+
+الموقع ثابت ولا يحتاج إلى عملية بناء. يمكن فتح `index.html` مباشرة، أو تشغيل خادم محلي:
+
+```bash
+python3 -m http.server 8000
+```
