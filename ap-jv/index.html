@@ -1,0 +1,1205 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="AP Invoice → JV Tool — Waves Hotel (WHU) | Fawaz Eltahir">
+<title>أداة تفريغ الفواتير إلى قيد يومية JV — WHU</title>
+<style>
+:root{--navy:#10263d;--blue:#1e6f9f;--gold:#b58a3a;--bg:#f5f7fa;--card:#fff;--text:#1f2d38;--muted:#667482;--line:#dce4eb;--ok:#0f7a45;--warn:#a06400;--err:#b3261e}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Noto Sans Arabic",Inter,"Segoe UI",Tahoma,Arial,sans-serif;line-height:1.65}
+body[dir="ltr"]{font-family:Inter,"Segoe UI",Tahoma,Arial,sans-serif}
+a{color:inherit}
+.wrap{max-width:1120px;margin:auto;padding:0 24px}
+nav{position:sticky;top:0;z-index:20;background:rgba(16,38,61,.97);color:#fff;border-bottom:1px solid #29445e}
+.navin{display:flex;align-items:center;justify-content:space-between;padding:13px 0;gap:10px}
+.brand{font-weight:800}.brand small{display:block;color:#bcd0df;font-weight:500;font-size:11px}
+.navlinks a{text-decoration:none;color:#dbe7ef;font-size:13px}
+.lang-btn{border:1px solid #7f9bb1;background:transparent;color:#fff;border-radius:7px;padding:7px 11px;cursor:pointer;font-weight:700}
+.banner{margin:20px 0;background:#fdf6e7;border:1px solid #e5cf9a;color:#6b5215;border-radius:10px;padding:13px 16px;font-size:13px;font-weight:600}
+.jserr{margin:14px 0;background:#fdeeed;border:1px solid #e8b6b3;color:var(--err);border-radius:10px;padding:12px 15px;font-size:12.5px;font-weight:700;white-space:pre-line}
+.step{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;margin-bottom:22px}
+.step h2{display:flex;align-items:center;gap:10px;font-size:19px;color:var(--navy);margin:0 0 8px}
+.stepno{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:var(--navy);color:#fff;font-size:14px;flex:none}
+.hint{color:var(--muted);font-size:12.5px;margin:6px 0 14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.dropzone{border:2px dashed #b9c8d4;border-radius:12px;padding:28px;text-align:center;color:var(--muted);cursor:pointer;font-size:13px;transition:.15s}
+.dropzone.drag{border-color:var(--blue);background:#eef6fb;color:var(--blue)}
+.dz-icon{font-size:30px;margin-bottom:6px}
+textarea,input,select{width:100%;border:1px solid #c4d0da;border-radius:8px;padding:9px 11px;font:inherit;font-size:13.5px;background:#fff;color:var(--text)}
+textarea{resize:vertical}
+input:disabled,select:disabled,button:disabled{opacity:.55;cursor:not-allowed}
+input:focus,select:focus,textarea:focus{outline:2px solid #bcd9ea;border-color:var(--blue)}
+.lbl{font-size:12.5px;font-weight:700;color:var(--navy);display:block;margin-bottom:6px}
+.btnrow{display:flex;gap:9px;align-items:center;margin-top:12px;flex-wrap:wrap}
+.btn{display:inline-block;padding:10px 16px;border-radius:8px;border:none;font:inherit;font-weight:700;font-size:13px;cursor:pointer;text-decoration:none}
+.btn.big{padding:13px 26px;font-size:15px}
+.primary{background:var(--navy);color:#fff}.primary:hover{background:#183756}
+.secondary{background:#fff;border:1px solid var(--navy);color:var(--navy)}
+.ghost{background:#fff;border:1px solid #c4d0da;color:var(--muted)}
+.danger{color:var(--err);border-color:#e3b6b3}
+.filelbl{display:inline-block;cursor:pointer}
+.doc-status{font-size:12.5px;margin-top:10px;color:var(--muted);white-space:pre-line}
+.qr-box{margin-top:12px;background:#eef8f1;border:1px solid #bfe0cb;border-radius:10px;padding:12px 14px;font-size:12.5px}
+.qr-box h4{margin:0 0 6px;color:var(--ok);font-size:13px}
+.formgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:13px}
+.fld label{display:block;font-size:11.5px;font-weight:700;color:var(--navy);margin-bottom:4px;cursor:pointer}
+.fld.num input{text-align:end;font-variant-numeric:tabular-nums}
+.fld.invalid input,.fld.invalid select{border-color:var(--err);background:#fff8f7}
+.fld-err{display:block;font-size:11px;color:var(--err);font-weight:700;margin-top:4px;min-height:14px}
+.checks{margin-top:14px;display:flex;flex-direction:column;gap:6px}
+.chk{border-radius:8px;padding:9px 13px;font-size:12.5px;font-weight:600;border:1px solid}
+.chk.pass{background:#eef8f1;border-color:#bfe0cb;color:var(--ok)}
+.chk.warn{background:#fdf6e7;border-color:#e5cf9a;color:var(--warn)}
+.chk.err{background:#fdeeed;border-color:#e8b6b3;color:var(--err)}
+.chk.info{background:#eef4fa;border-color:#bfd4e6;color:#20567c}
+.refbar{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:14px;flex-wrap:wrap}
+.refstatus{font-size:12.5px;font-weight:700}
+.refstatus .demo{color:var(--warn)}.refstatus .full{color:var(--ok)}.refstatus .warn2{display:block;color:var(--err);margin-top:4px;font-weight:700}
+table.alloc,table.jv{width:100%;border-collapse:collapse;font-size:12.8px}
+table.alloc th,table.jv th{background:#f0f4f8;color:var(--navy);text-align:start;padding:8px 9px;border:1px solid var(--line);font-size:11.5px}
+table.alloc td,table.jv td{border:1px solid var(--line);padding:6px 8px;vertical-align:top;background:#fff}
+table.alloc select,table.alloc input{font-size:12.5px;padding:7px 8px}
+.rowdel{background:none;border:none;color:var(--err);font-size:16px;cursor:pointer}
+.alloc-sum{font-size:12.5px;font-weight:700;color:var(--muted)}
+.acc-meta{font-size:10.5px;color:var(--muted);margin-top:3px}
+.acc-meta .cat-a{color:var(--warn);font-weight:700}
+.acc-meta .cat-b{color:var(--err);font-weight:700}
+.hr-confirm{margin-top:12px;background:#fdf6e7;border:1px solid #e5cf9a;border-radius:9px;padding:11px 14px;font-size:12.5px;color:#6b5215}
+.hr-confirm input{width:auto;margin-inline-end:6px}
+.jvmeta{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;font-size:12.5px;margin:14px 0}
+.jvmeta div{background:#f0f4f8;border-radius:8px;padding:8px 11px}
+.jvmeta b{color:var(--navy)}
+table.jv td.n{text-align:end;font-variant-numeric:tabular-nums;direction:ltr}
+table.jv tfoot td{font-weight:800;background:#f0f4f8}
+.badge{display:inline-block;border-radius:6px;padding:2px 8px;font-size:10.5px;font-weight:800;margin-inline-start:6px}
+.badge.hi{background:#eef8f1;color:var(--ok)}.badge.md{background:#fdf6e7;color:var(--warn)}.badge.lo{background:#fdeeed;color:var(--err)}
+footer{padding:26px 0 34px;text-align:center;color:var(--muted);font-size:12px}
+@media(max-width:900px){.formgrid{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}.jvmeta{grid-template-columns:1fr 1fr}}
+@media print{nav,.banner,.btnrow,.dropzone,.step:nth-of-type(1),.step:nth-of-type(5),footer{display:none!important}.step{border:none;padding:8px 0}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap navin">
+    <div class="brand"><span data-i18n="appTitle">أداة الفواتير → قيد يومية</span><small data-i18n="appSub">Waves Hotel (WHU) · SunSystems 6.4 · USALI 11th Ed.</small></div>
+    <div class="navlinks">
+      <a href="../index.html" data-i18n="backPortfolio">← البورتفوليو</a>
+    </div>
+    <button id="langBtn" class="lang-btn" type="button">English</button>
+  </div>
+</nav>
+
+<div class="wrap">
+
+<div id="jsErrBox" class="jserr" hidden></div>
+<div class="banner" data-i18n="draftBanner">وضع المسودة — هذه الأداة مساعد للمحاسب (Copilot) ولا تُرحّل قيودًا للنظام. كل مخرجاتها تتطلب اعتماد محاسب مسؤول. AI يفسّر · الملف المرجعي يقيّد · الكود يحسب · الإنسان يعتمد.</div>
+
+<!-- STEP 1 : DOCUMENT -->
+<section class="step">
+  <h2><span class="stepno">1</span><span data-i18n="s1Title">مستند الفاتورة — الاستخلاص</span></h2>
+  <p class="hint" data-i18n="s1Hint">ارفع صورة أو PDF للفاتورة (تُقرأ محليًا في متصفحك ولا تُرسل لأي خادم). تُقرأ بيانات رمز QR الخاص بفواتير هيئة الزكاة (ZATCA) بشكل حتمي، ويُحلَّل نص الفاتورة لتعبئة الحقول تلقائيًا — مع وجوب المراجعة البشرية.</p>
+
+  <div class="grid2">
+    <div>
+      <div id="dropzone" class="dropzone" role="button" tabindex="0">
+        <div class="dz-icon">📄</div>
+        <div data-i18n="dzText">اسحب الفاتورة هنا أو اضغط للاختيار (PDF / JPG / PNG)</div>
+        <input type="file" id="fileInput" accept=".pdf,image/*" hidden>
+      </div>
+      <div class="btnrow">
+        <button id="ocrBtn" class="btn ghost" type="button" data-i18n="ocrBtn">تشغيل OCR على الصورة (اختياري)</button>
+        <a class="btn ghost" href="sample_invoice_qr.png" download data-i18n="sampleLink">تنزيل فاتورة تجريبية (QR)</a>
+      </div>
+      <div id="docStatus" class="doc-status" role="status" aria-live="polite"></div>
+      <div id="qrResult" class="qr-box" hidden></div>
+      <canvas id="workCanvas" hidden></canvas>
+    </div>
+    <div>
+      <label class="lbl" for="pasteText" data-i18n="pasteLbl">أو الصق نص الفاتورة هنا:</label>
+      <textarea id="pasteText" rows="9" data-i18n-ph="pastePh" placeholder="الصق نص الفاتورة (عربي أو إنجليزي)..."></textarea>
+      <div class="btnrow">
+        <button id="parseBtn" class="btn primary" type="button" data-i18n="parseBtn">تحليل النص وتعبئة الحقول</button>
+        <button id="clearDocBtn" class="btn ghost" type="button" data-i18n="clearBtn">مسح</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STEP 2 : INVOICE DATA -->
+<section class="step">
+  <h2><span class="stepno">2</span><span data-i18n="s2Title">بيانات الفاتورة والتحقق</span></h2>
+  <div class="formgrid">
+    <div class="fld" id="wrap_fSupplier"><label for="fSupplier" data-i18n="fSupplier">اسم المورد *</label><input id="fSupplier" type="text" list="supplierList" autocomplete="off" required aria-required="true"><datalist id="supplierList"></datalist><span class="fld-err" id="err_fSupplier" aria-live="polite"></span></div>
+    <div class="fld" id="wrap_fSupCode"><label for="fSupCode" data-i18n="fSupCode">كود المورد (إن وجد)</label><input id="fSupCode" type="text"></div>
+    <div class="fld" id="wrap_fVatNo"><label for="fVatNo" data-i18n="fVatNo">الرقم الضريبي للمورد (15 خانة)</label><input id="fVatNo" type="text" inputmode="numeric" maxlength="15"><span class="fld-err" id="err_fVatNo" aria-live="polite"></span></div>
+    <div class="fld" id="wrap_fInvNo"><label for="fInvNo" data-i18n="fInvNo">رقم الفاتورة *</label><input id="fInvNo" type="text" required aria-required="true"><span class="fld-err" id="err_fInvNo" aria-live="polite"></span></div>
+    <div class="fld" id="wrap_fInvDate"><label for="fInvDate" data-i18n="fInvDate">تاريخ الفاتورة *</label><input id="fInvDate" type="date" required aria-required="true"><span class="fld-err" id="err_fInvDate" aria-live="polite"></span></div>
+    <div class="fld" id="wrap_fDueDate"><label for="fDueDate" data-i18n="fDueDate">تاريخ الاستحقاق</label><input id="fDueDate" type="date"></div>
+    <div class="fld" id="wrap_fPO"><label for="fPO" data-i18n="fPO">رقم أمر الشراء PO</label><input id="fPO" type="text"></div>
+    <div class="fld" id="wrap_fCurr"><label for="fCurr" data-i18n="fCurr">العملة</label><select id="fCurr"><option>SAR</option><option>USD</option><option>EUR</option></select></div>
+    <div class="fld" id="wrap_fDesc"><label for="fDesc" data-i18n="fDesc">وصف الفاتورة *</label><input id="fDesc" type="text" required aria-required="true"><span class="fld-err" id="err_fDesc" aria-live="polite"></span></div>
+    <div class="fld" id="wrap_fRate"><label for="fRate" data-i18n="fRate">المعاملة الضريبية</label>
+      <select id="fRate">
+        <option value="15" data-i18n="rate15">15% ضريبة قيمة مضافة قياسية</option>
+        <option value="0" data-i18n="rate0">0% / معفاة — بدون ضريبة</option>
+        <option value="5" data-i18n="rate5">5% رسم إشغال بلدي (تنبيه — ليست VAT)</option>
+      </select>
+    </div>
+    <div class="fld num" id="wrap_fNet"><label for="fNet" data-i18n="fNet">الصافي (قبل الضريبة) *</label><input id="fNet" type="number" step="0.01" min="0" required aria-required="true"><span class="fld-err" id="err_fNet" aria-live="polite"></span></div>
+    <div class="fld num" id="wrap_fVat"><label for="fVat" data-i18n="fVat">مبلغ الضريبة</label><input id="fVat" type="number" step="0.01" min="0"><span class="fld-err" id="err_fVat" aria-live="polite"></span></div>
+    <div class="fld num" id="wrap_fGross"><label for="fGross" data-i18n="fGross">الإجمالي (شامل الضريبة) *</label><input id="fGross" type="number" step="0.01" min="0" required aria-required="true"><span class="fld-err" id="err_fGross" aria-live="polite"></span></div>
+    <div class="fld"><label>&nbsp;</label><button id="calcBtn" class="btn secondary" type="button" data-i18n="calcBtn">إكمال الحساب تلقائيًا</button></div>
+  </div>
+  <div id="vatCheck" class="checks" role="status" aria-live="polite"></div>
+</section>
+
+<!-- STEP 3 : GL CODING -->
+<section class="step">
+  <h2><span class="stepno">3</span><span data-i18n="s3Title">التوجيه المحاسبي (حساب / قسم / كود تحليل)</span></h2>
+
+  <div class="refbar">
+    <div id="refStatus" class="refstatus"></div>
+    <div>
+      <label class="btn ghost filelbl"><span data-i18n="refUpload">رفع الملف المرجعي Waves_Hotel_COA_Department_Reference.xlsx</span>
+        <input type="file" id="refFile" accept=".xlsx,.xls,.csv" hidden>
+      </label>
+    </div>
+  </div>
+
+  <table class="alloc" id="allocTable">
+    <thead>
+      <tr>
+        <th data-i18n="thAccount">حساب المصروف (GL)</th>
+        <th data-i18n="thDept">القسم</th>
+        <th data-i18n="thAnalysis">كود التحليل</th>
+        <th data-i18n="thAmount">المبلغ (صافي)</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="allocBody"></tbody>
+  </table>
+  <div class="btnrow">
+    <button id="addAllocBtn" class="btn secondary" type="button" data-i18n="addLine">+ إضافة سطر توزيع</button>
+    <span id="allocSum" class="alloc-sum"></span>
+  </div>
+  <div id="hrConfirmWrap" class="hr-confirm" hidden>
+    <label><input type="checkbox" id="hrConfirm"> <span data-i18n="hrConfirmLbl">أؤكد (كمحاسب مسؤول) أن هذا قيد رواتب/مخصصات حقيقي من مصدره الصحيح وليس فاتورة مورد اعتيادية — نطاق 50000–55100 يتطلب تأكيدًا بشريًا صريحًا.</span></label>
+  </div>
+  <div id="codingChecks" class="checks" role="status" aria-live="polite"></div>
+</section>
+
+<!-- STEP 4 : JV -->
+<section class="step">
+  <h2><span class="stepno">4</span><span data-i18n="s4Title">مسودة قيد اليومية JV</span></h2>
+  <div class="btnrow">
+    <button id="buildBtn" class="btn primary big" type="button" data-i18n="buildBtn">توليد مسودة القيد</button>
+  </div>
+  <div id="jvWrap" hidden>
+    <div class="jvmeta" id="jvMeta"></div>
+    <table class="jv" id="jvTable">
+      <thead><tr>
+        <th data-i18n="jvAcc">الحساب</th><th data-i18n="jvName">الوصف</th><th data-i18n="jvDept">القسم</th><th data-i18n="jvAn">تحليل</th><th data-i18n="jvDr">مدين</th><th data-i18n="jvCr">دائن</th>
+      </tr></thead>
+      <tbody id="jvBody"></tbody>
+      <tfoot id="jvFoot"></tfoot>
+    </table>
+    <div id="jvChecks" class="checks"></div>
+    <div class="btnrow">
+      <button id="csvBtn" class="btn primary" type="button" data-i18n="csvBtn">تصدير CSV (مسودة استيراد SunSystems)</button>
+      <button id="copyBtn" class="btn secondary" type="button" data-i18n="copyBtn">نسخ القيد كنص</button>
+      <button id="saveBtn" class="btn secondary" type="button" data-i18n="saveBtn">حفظ في سجل الفواتير</button>
+      <button id="printBtn" class="btn ghost" type="button" data-i18n="printBtn">طباعة</button>
+    </div>
+    <p class="hint" data-i18n="sunNote">تنبيه (القسم 13): صيغة استيراد SunSystems الرسمية غير مؤكدة — الملف الناتج مسودة CSV للمراجعة فقط وليس ملف استيراد إنتاجي (SUNSYSTEMS IMPORT FORMAT NOT CONFIRMED).</p>
+  </div>
+</section>
+
+<!-- STEP 5 : REGISTER -->
+<section class="step">
+  <h2><span class="stepno">5</span><span data-i18n="s5Title">سجل الفواتير وكشف التكرار</span></h2>
+  <p class="hint" data-i18n="s5Hint">يُحفظ السجل محليًا في متصفحك فقط (localStorage) ويُستخدم لكشف الفواتير المكررة: مورد + رقم فاتورة + مبلغ.</p>
+  <table class="jv" id="regTable">
+    <thead><tr>
+      <th data-i18n="rgDate">تاريخ الحفظ</th><th data-i18n="rgSup">المورد</th><th data-i18n="rgInv">رقم الفاتورة</th><th data-i18n="rgInvDate">تاريخ الفاتورة</th><th data-i18n="rgGross">الإجمالي</th><th data-i18n="rgRef">مرجع القيد</th><th></th>
+    </tr></thead>
+    <tbody id="regBody"></tbody>
+  </table>
+  <div class="btnrow">
+    <button id="regCsvBtn" class="btn secondary" type="button" data-i18n="regCsv">تصدير السجل CSV</button>
+    <button id="regClearBtn" class="btn ghost danger" type="button" data-i18n="regClear">مسح السجل</button>
+  </div>
+</section>
+
+<footer>
+  <span data-i18n="footer">أداة مساعدة للمحاسب — لا ترحيل آلي. أُعدت وفق منهجية 4D للهندسة التلقينية — فواز الطاهر أحمد عطية الله © 2026</span>
+</footer>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+/* =========================================================================
+   AP Invoice → JV Draft Tool — Waves Hotel (WHU) — rebuilt/hardened version
+   Accounting Copilot: AI/parsing interprets · reference file constrains ·
+   code calculates · human approves. NO auto-posting.
+   ========================================================================= */
+"use strict";
+
+/* Surface unexpected errors visibly instead of failing silently */
+window.addEventListener("error", e=>{
+  const el = document.getElementById("jsErrBox");
+  if (!el) return;
+  el.hidden = false;
+  el.textContent = "⚠ JS ERROR: " + (e.message||"") + (e.filename?` — ${e.filename.split("/").pop()}:${e.lineno}`:"");
+});
+window.addEventListener("unhandledrejection", e=>{
+  const el = document.getElementById("jsErrBox");
+  if (!el) return;
+  el.hidden = false;
+  el.textContent = "⚠ JS ERROR: " + (e.reason && e.reason.message ? e.reason.message : String(e.reason));
+});
+
+/* ------------------------------- i18n ---------------------------------- */
+const I = {
+ar:{
+appTitle:"أداة الفواتير → قيد يومية", appSub:"فندق ويفز (WHU) · SunSystems 6.4 · USALI الإصدار 11",
+backPortfolio:"← البورتفوليو",
+draftBanner:"وضع المسودة — هذه الأداة مساعد للمحاسب (Copilot) ولا تُرحّل قيودًا للنظام. كل مخرجاتها تتطلب اعتماد محاسب مسؤول. AI يفسّر · الملف المرجعي يقيّد · الكود يحسب · الإنسان يعتمد.",
+s1Title:"مستند الفاتورة — الاستخلاص",
+s1Hint:"ارفع صورة أو PDF للفاتورة (تُقرأ محليًا في متصفحك ولا تُرسل لأي خادم). تُقرأ بيانات رمز QR الخاص بفواتير هيئة الزكاة (ZATCA) بشكل حتمي، ويُحلَّل نص الفاتورة لتعبئة الحقول تلقائيًا — مع وجوب المراجعة البشرية.",
+dzText:"اسحب الفاتورة هنا أو اضغط للاختيار (PDF / JPG / PNG)",
+ocrBtn:"تشغيل OCR على الصورة (اختياري)", ocrBtnBusy:"جارٍ التشغيل...", sampleLink:"تنزيل فاتورة تجريبية (QR)", pasteLbl:"أو الصق نص الفاتورة هنا:",
+pastePh:"الصق نص الفاتورة (عربي أو إنجليزي)...", parseBtn:"تحليل النص وتعبئة الحقول", clearBtn:"مسح",
+s2Title:"بيانات الفاتورة والتحقق",
+fSupplier:"اسم المورد *", fSupCode:"كود المورد (إن وجد)", fVatNo:"الرقم الضريبي للمورد (15 خانة)",
+fInvNo:"رقم الفاتورة *", fInvDate:"تاريخ الفاتورة *", fDueDate:"تاريخ الاستحقاق", fPO:"رقم أمر الشراء PO",
+fCurr:"العملة", fDesc:"وصف الفاتورة *", fRate:"المعاملة الضريبية",
+rate15:"15% ضريبة قيمة مضافة قياسية", rate0:"0% / معفاة — بدون ضريبة", rate5:"5% رسم إشغال بلدي (تنبيه — ليست VAT)",
+fNet:"الصافي (قبل الضريبة) *", fVat:"مبلغ الضريبة", fGross:"الإجمالي (شامل الضريبة) *", calcBtn:"إكمال الحساب تلقائيًا",
+s3Title:"التوجيه المحاسبي (حساب / قسم / كود تحليل)",
+refUpload:"رفع الملف المرجعي Waves_Hotel_COA_Department_Reference.xlsx",
+thAccount:"حساب المصروف (GL)", thDept:"القسم", thAnalysis:"كود التحليل", thAmount:"المبلغ (صافي)",
+addLine:"+ إضافة سطر توزيع",
+hrConfirmLbl:"أؤكد (كمحاسب مسؤول) أن هذا قيد رواتب/مخصصات حقيقي من مصدره الصحيح وليس فاتورة مورد اعتيادية — نطاق 50000–55100 يتطلب تأكيدًا بشريًا صريحًا.",
+s4Title:"مسودة قيد اليومية JV", buildBtn:"توليد مسودة القيد",
+jvAcc:"الحساب", jvName:"الوصف", jvDept:"القسم", jvAn:"تحليل", jvDr:"مدين", jvCr:"دائن",
+csvBtn:"تصدير CSV (مسودة استيراد SunSystems)", copyBtn:"نسخ القيد كنص", saveBtn:"حفظ في سجل الفواتير", printBtn:"طباعة",
+sunNote:"تنبيه (القسم 13): صيغة استيراد SunSystems الرسمية غير مؤكدة — الملف الناتج مسودة CSV للمراجعة فقط وليس ملف استيراد إنتاجي (SUNSYSTEMS IMPORT FORMAT NOT CONFIRMED).",
+s5Title:"سجل الفواتير وكشف التكرار",
+s5Hint:"يُحفظ السجل محليًا في متصفحك فقط (localStorage) ويُستخدم لكشف الفواتير المكررة: مورد + رقم فاتورة + مبلغ.",
+rgDate:"تاريخ الحفظ", rgSup:"المورد", rgInv:"رقم الفاتورة", rgInvDate:"تاريخ الفاتورة", rgGross:"الإجمالي", rgRef:"مرجع القيد",
+regCsv:"تصدير السجل CSV", regClear:"مسح السجل",
+footer:"أداة مساعدة للمحاسب — لا ترحيل آلي. أُعدت وفق منهجية 4D للهندسة التلقينية — فواز الطاهر أحمد عطية الله © 2026",
+refDemo:"الوضع المرجعي: بيانات تجريبية (الحسابات المؤكدة من القسم 0.3/0.6 فقط). ارفع الملف الكامل لتفعيل 809 حسابًا و52 قسمًا.",
+refFull:"الوضع المرجعي: الملف الكامل محمّل", accounts:"حساب", depts:"قسم", mappings:"ربط",
+refMapWarn:"تنبيه: الملف المرفوع لا يحتوي ورقة \"ربط الحساب بالقسم\" أو أنها فارغة — لن تظهر أقسام مسموحة لأي حساب حتى يُصحَّح الملف.",
+refErrPartial:"تم تحميل بعض بيانات الملف لكن ورقة أو أكثر ناقصة — راجع الرسالة أعلى الجدول.",
+qrTitle:"✔ تم قراءة QR (ZATCA TLV) — بيانات حتمية من الفاتورة:",
+qrSeller:"اسم البائع", qrVat:"الرقم الضريبي", qrTime:"التاريخ/الوقت", qrTotal:"الإجمالي شامل الضريبة", qrVatAmt:"مبلغ الضريبة",
+noQr:"لم يُعثر على رمز QR قابل للقراءة في المستند.", pdfPage:"تمت معالجة صفحات PDF:",
+ocrRunning:"جارٍ تشغيل OCR (قد يستغرق وقتًا حسب حجم الصورة)...", ocrDone:"اكتمل OCR — راجع النص ثم اضغط تحليل.", ocrNoImg:"ارفع صورة أولاً قبل تشغيل OCR.", ocrLoadErr:"تعذر تحميل محرك OCR (يتطلب اتصالاً بالإنترنت).",
+libLoadErr:"تعذر تحميل مكتبة القراءة من الشبكة (jsQR / pdf.js / xlsx). تحقق من الاتصال بالإنترنت وحاول مرة أخرى.",
+fileReadErr:"تعذّر قراءة هذا الملف. تأكد أنه PDF أو صورة صالحة ثم أعد المحاولة.",
+parsedInto:"تم تحليل النص وتعبئة الحقول الممكنة — تحقق من كل حقل قبل المتابعة.",
+missing:"معلومات ناقصة", whyMatters:"مطلوبة قبل توليد القيد", reqField:"حقل مطلوب",
+vatOk:"PASS — التحقق الحسابي: الصافي × النسبة = الضريبة، والصافي + الضريبة = الإجمالي (فرق ≤ 0.02).",
+vatRateErr:"خطأ في نسبة الضريبة: الصافي × النسبة لا يساوي مبلغ الضريبة المدخل.",
+vatSumErr:"خطأ في الجمع: الصافي + الضريبة لا يساوي الإجمالي المدخل.",
+vatDiff:"الفرق", expected:"المتوقع", fieldMismatch:"القيم غير متطابقة",
+enterOneAmount:"أدخل قيمة واحدة على الأقل (الصافي أو الإجمالي) لتفعيل الحساب التلقائي.",
+recalcNote:"تم إعادة حساب الضريبة والإجمالي من الصافي والنسبة المختارة (الصافي هو المرجع).",
+muniWarn:"تنبيه: اخترت رسم الإشغال البلدي 5% — هذا ليس ضريبة قيمة مضافة ولن يُوجَّه للحساب 15240. يلزم تأكيد بشري لكود الإيراد/المعالجة قبل الترحيل.",
+vatNoWarn:"تحذير: الرقم الضريبي يجب أن يكون 15 خانة ويبدأ وينتهي بـ 3 (نمط ZATCA).",
+dupNone:"NO DUPLICATE FOUND — لا يوجد تكرار في السجل المحلي.",
+dupPossible:"POSSIBLE DUPLICATE — يوجد بالسجل فاتورة مشابهة (نفس المورد ونفس الرقم أو نفس المبلغ). مراجعة بشرية مطلوبة:",
+dupConfirmed:"CONFIRMED DUPLICATE — نفس المورد + نفس رقم الفاتورة + نفس المبلغ موجودة في السجل. POSTING BLOCKED حتى المراجعة.",
+selAcc:"— اختر الحساب —", selDept:"— اختر القسم —", selAn:"— اختر كود التحليل —", anNotReq:"غير مطلوب لهذا القسم",
+noMapDept:"لا توجد أقسام مسموحة لهذا الحساب في ملف الربط — NO APPROVED COMBINATION — ESCALATION REQUIRED",
+catA:"فئة A — حساب رواتب/تكاليف نظامية (50000–55100): HIGH ATTENTION — يتطلب تأكيدًا أنه قيد رواتب وليس فاتورة مورد.",
+catB:"فئة B — حساب إحصائي (ساعات/FTE): STATISTICAL ENTRY — NOT A FINANCIAL JOURNAL LINE — لا يدخل في قيد مالي ولا يخضع لموازنة مدين/دائن بالريال.",
+catC1:"فئة C1 — تحميل داخلي بين الأقسام: تأكد من أساس التوزيع (قيد توزيعات نهاية شهر وليس فاتورة مورد).",
+hrAnMissing:"NO MATCHING HR ANALYSIS CODE — القسم 6040 لا يقبل أي مصروف بدون كود تحليل من سلسلة 335xxx. الحقل إلزامي.",
+allocEmpty:"أضف سطر توزيع واحدًا على الأقل واختر الحساب والقسم والمبلغ.",
+allocIncomplete:"يوجد سطر توزيع غير مكتمل — تحقق من الحساب والقسم والمبلغ في كل سطر.",
+allocSumLbl:"مجموع التوزيع:", ofNet:"من الصافي",
+allocMismatch:"مجموع سطور التوزيع لا يساوي صافي الفاتورة — عدِّل المبالغ.",
+catBBlocked:"POSTING BLOCKED — سطر يحتوي حسابًا إحصائيًا (فئة B) لا يجوز إدراجه في قيد مالي.",
+catANeedsConfirm:"POSTING BLOCKED — حساب فئة A بدون تأكيد بشري (فعِّل مربع التأكيد في الخطوة 3).",
+jvBalanced:"PASS — القيد متوازن: إجمالي المدين = إجمالي الدائن.",
+jvImbalance:"JOURNAL REJECTED — IMBALANCE DETECTED — إجمالي المدين ≠ إجمالي الدائن.",
+totalDr:"إجمالي المدين", totalCr:"إجمالي الدائن", diff:"الفرق",
+confLbl:"درجة الثقة في التوجيه", confHi:"عالية — تطابق كامل مع الملف المرجعي", confMd:"متوسطة — تفسير وصفي، مراجعة بشرية", confLo:"منخفضة — تصعيد مطلوب",
+approval:"الاعتماد: HUMAN REVIEW REQUIRED — لا يُرحَّل هذا القيد إلى SunSystems إلا بعد اعتماد محاسب مسؤول.",
+jvRef:"مرجع القيد", jvDate:"تاريخ القيد", jvSup:"المورد", jvInv:"الفاتورة",
+copied:"تم نسخ القيد.", copyFail:"تعذر النسخ — انسخ النص يدويًا.", savedReg:"تم حفظ الفاتورة في السجل المحلي.",
+regEmpty:"السجل فارغ.", del:"حذف", confirmClear:"هل تريد مسح كامل السجل المحلي؟",
+refLoaded:"تم تحميل الملف المرجعي:", refErr:"تعذر قراءة الملف — تأكد أنه ملف Excel يحوي أوراق: Departments / Chart of Accounts / Account-Department Mapping.",
+demoTag:"(تجريبي)", statBadge:"إحصائي", drLine:"مدين", crLine:"دائن",
+buildFirst:"أكمل الخطوات 2 و3 أولاً — راجع رسائل التحقق أعلاه.",
+vatLineDesc:"ضريبة مدخلات قابلة للاسترداد 15%", apLineDesc:"إجمالي مستحق للمورد",
+uncertain:"UNCERTAIN — HUMAN REVIEW REQUIRED"
+},
+en:{
+appTitle:"Invoice → JV Tool", appSub:"Waves Hotel (WHU) · SunSystems 6.4 · USALI 11th Ed.",
+backPortfolio:"← Portfolio",
+draftBanner:"DRAFT MODE — This tool is an accountant's copilot. It never posts to the ERP. Every output requires approval by a responsible accountant. AI interprets · Reference file constrains · Code calculates · Human approves.",
+s1Title:"Invoice Document — Extraction",
+s1Hint:"Upload an invoice image or PDF (processed locally in your browser — nothing is sent to any server). ZATCA e-invoice QR codes are decoded deterministically, and invoice text is parsed to pre-fill the fields — human review is mandatory.",
+dzText:"Drop the invoice here or click to browse (PDF / JPG / PNG)",
+ocrBtn:"Run OCR on image (optional)", ocrBtnBusy:"Running...", sampleLink:"Download sample invoice (QR)", pasteLbl:"Or paste the invoice text here:",
+pastePh:"Paste invoice text (Arabic or English)...", parseBtn:"Parse text & fill fields", clearBtn:"Clear",
+s2Title:"Invoice Data & Validation",
+fSupplier:"Supplier name *", fSupCode:"Supplier code (if any)", fVatNo:"Supplier VAT number (15 digits)",
+fInvNo:"Invoice number *", fInvDate:"Invoice date *", fDueDate:"Due date", fPO:"PO number",
+fCurr:"Currency", fDesc:"Invoice description *", fRate:"Tax treatment",
+rate15:"15% standard VAT", rate0:"0% / exempt — no VAT", rate5:"5% Municipal Occupancy Fee (NOT VAT)",
+fNet:"Net (before tax) *", fVat:"Tax amount", fGross:"Gross (incl. tax) *", calcBtn:"Auto-complete calculation",
+s3Title:"GL Coding (Account / Department / Analysis Code)",
+refUpload:"Upload reference file Waves_Hotel_COA_Department_Reference.xlsx",
+thAccount:"Expense GL account", thDept:"Department", thAnalysis:"Analysis code", thAmount:"Amount (net)",
+addLine:"+ Add allocation line",
+hrConfirmLbl:"I confirm (as responsible accountant) this is a genuine payroll/statutory journal from its proper source, not a standard supplier invoice — range 50000–55100 requires explicit human confirmation.",
+s4Title:"Journal Voucher (JV) Draft", buildBtn:"Generate JV draft",
+jvAcc:"Account", jvName:"Description", jvDept:"Dept", jvAn:"Analysis", jvDr:"Debit", jvCr:"Credit",
+csvBtn:"Export CSV (SunSystems import DRAFT)", copyBtn:"Copy JV as text", saveBtn:"Save to invoice register", printBtn:"Print",
+sunNote:"Note (Section 13): the official SunSystems import specification is not confirmed — the exported file is a review DRAFT only, not a production import file (SUNSYSTEMS IMPORT FORMAT NOT CONFIRMED).",
+s5Title:"Invoice Register & Duplicate Detection",
+s5Hint:"The register is stored only in your browser (localStorage) and drives duplicate detection: supplier + invoice number + amount.",
+rgDate:"Saved at", rgSup:"Supplier", rgInv:"Invoice no.", rgInvDate:"Invoice date", rgGross:"Gross", rgRef:"JV ref",
+regCsv:"Export register CSV", regClear:"Clear register",
+footer:"Accountant-assist tool — no auto-posting. Built with the 4D Prompt Engineering Model — Fawaz Eltahir Ahmed Atiatallah © 2026",
+refDemo:"Reference mode: DEMO data (only the confirmed accounts from Section 0.3/0.6). Upload the full file to enable 809 accounts and 52 departments.",
+refFull:"Reference mode: full file loaded", accounts:"accounts", depts:"departments", mappings:"mappings",
+refMapWarn:"Warning: the uploaded file has no (or an empty) Account-Department Mapping sheet — no departments will be selectable for any account until the file is fixed.",
+refErrPartial:"Some data loaded from the file, but a sheet is missing or empty — see the message above the table.",
+qrTitle:"✔ QR decoded (ZATCA TLV) — deterministic data from the invoice:",
+qrSeller:"Seller name", qrVat:"VAT number", qrTime:"Timestamp", qrTotal:"Total incl. VAT", qrVatAmt:"VAT amount",
+noQr:"No readable QR code found in the document.", pdfPage:"PDF pages processed:",
+ocrRunning:"Running OCR (may take a while depending on image size)...", ocrDone:"OCR complete — review the text then click Parse.", ocrNoImg:"Upload an image first before running OCR.", ocrLoadErr:"Could not load the OCR engine (requires internet).",
+libLoadErr:"Could not load a required library from the network (jsQR / pdf.js / xlsx). Check your internet connection and try again.",
+fileReadErr:"Could not read this file. Make sure it's a valid PDF or image and try again.",
+parsedInto:"Text parsed and fields pre-filled where possible — verify every field before proceeding.",
+missing:"Missing information", whyMatters:"required before generating the JV", reqField:"Required field",
+vatOk:"PASS — deterministic check: Net × Rate = Tax and Net + Tax = Gross (diff ≤ 0.02).",
+vatRateErr:"Tax rate error: Net × Rate does not equal the entered tax amount.",
+vatSumErr:"Sum error: Net + Tax does not equal the entered gross amount.",
+vatDiff:"Difference", expected:"Expected", fieldMismatch:"Values don't reconcile",
+enterOneAmount:"Enter at least one amount (Net or Gross) to enable auto-calculation.",
+recalcNote:"Tax and Gross were recalculated from Net using the selected rate (Net is treated as the source of truth).",
+muniWarn:"Warning: you selected the 5% Municipal Occupancy Fee — this is NOT VAT and will not be routed to account 15240. Human confirmation of the applicable treatment is required before posting.",
+vatNoWarn:"Warning: VAT number should be 15 digits, starting and ending with 3 (ZATCA pattern).",
+dupNone:"NO DUPLICATE FOUND — no duplicate in the local register.",
+dupPossible:"POSSIBLE DUPLICATE — a similar invoice exists in the register (same supplier and same number or same amount). Human review required:",
+dupConfirmed:"CONFIRMED DUPLICATE — same supplier + invoice number + amount already in the register. POSTING BLOCKED pending review.",
+selAcc:"— select account —", selDept:"— select department —", selAn:"— select analysis code —", anNotReq:"Not required for this department",
+noMapDept:"No permitted departments for this account in the mapping sheet — NO APPROVED COMBINATION — ESCALATION REQUIRED",
+catA:"Category A — payroll/statutory account (50000–55100): HIGH ATTENTION — confirm this is a genuine payroll journal, not a supplier invoice.",
+catB:"Category B — statistical account (hours/FTE): STATISTICAL ENTRY — NOT A FINANCIAL JOURNAL LINE — excluded from monetary DR/CR balancing.",
+catC1:"Category C1 — internal cross-departmental allocation: confirm the allocation basis (month-end allocation journal, not a supplier invoice).",
+hrAnMissing:"NO MATCHING HR ANALYSIS CODE — Department 6040 accepts no expense posting without a 335xxx analysis code. This field is mandatory.",
+allocEmpty:"Add at least one allocation line and select account, department and amount.",
+allocIncomplete:"An allocation line is incomplete — check the account, department and amount on every line.",
+allocSumLbl:"Allocation total:", ofNet:"of net",
+allocMismatch:"Allocation lines do not sum to the invoice net amount — adjust the amounts.",
+catBBlocked:"POSTING BLOCKED — a line uses a statistical (Category B) account which cannot appear in a financial journal.",
+catANeedsConfirm:"POSTING BLOCKED — Category A account without human confirmation (tick the confirmation box in Step 3).",
+jvBalanced:"PASS — journal balanced: Total Debit = Total Credit.",
+jvImbalance:"JOURNAL REJECTED — IMBALANCE DETECTED — Total Debit ≠ Total Credit.",
+totalDr:"Total Debit", totalCr:"Total Credit", diff:"Difference",
+confLbl:"Coding confidence", confHi:"High — exact reference-file match", confMd:"Reasonable — descriptive interpretation, human review", confLo:"Low — escalation required",
+approval:"Approval: HUMAN REVIEW REQUIRED — this JV must not be posted to SunSystems without sign-off by a responsible accountant.",
+jvRef:"JV reference", jvDate:"JV date", jvSup:"Supplier", jvInv:"Invoice",
+copied:"JV copied.", copyFail:"Could not copy — copy the text manually.", savedReg:"Invoice saved to local register.",
+regEmpty:"Register is empty.", del:"Delete", confirmClear:"Clear the entire local register?",
+refLoaded:"Reference file loaded:", refErr:"Could not read the file — make sure it is the Excel workbook with sheets: Departments / Chart of Accounts / Account-Department Mapping.",
+demoTag:"(demo)", statBadge:"STAT", drLine:"DR", crLine:"CR",
+buildFirst:"Complete steps 2 and 3 first — see the validation messages above.",
+vatLineDesc:"Recoverable input VAT 15%", apLineDesc:"Gross payable to supplier",
+uncertain:"UNCERTAIN — HUMAN REVIEW REQUIRED"
+}};
+
+let lang = localStorage.getItem("apjvLang") || "ar";
+const t = k => (I[lang][k] !== undefined ? I[lang][k] : k);
+
+function applyLang(){
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+  document.body.dir = lang === "ar" ? "rtl" : "ltr";
+  document.getElementById("langBtn").textContent = lang === "ar" ? "English" : "العربية";
+  document.querySelectorAll("[data-i18n]").forEach(el=>{ el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll("[data-i18n-ph]").forEach(el=>{ el.placeholder = t(el.dataset.i18nPh); });
+  renderRefStatus(); renderAlloc(); renderRegister(); validateInvoice();
+}
+
+/* --------------------- REFERENCE DATA (DEMO SUBSET) ---------------------
+   Built ONLY from the confirmed mappings in the master prompt (Sections
+   0.3 and 0.6). This is NOT the full 809-account COA — upload the real
+   Waves_Hotel_COA_Department_Reference.xlsx to replace it.               */
+const CONTROL = { VAT_INPUT:"15240", AP_CONTROL:"21010" };
+/* FIXED: the real COA (Mapping_between_Sun_Departments_and_Accounts_Aug-2026.xlsx)
+   shows 22180 = "Accrued Telecommunication", NOT trade payables. The correct
+   AP control account is 21010 "A/P Trade". Every invoice's credit line was
+   previously routed to the wrong GL account. */
+
+const DEMO_REF = {
+  demo: true, mapWarn: false,
+  departments: [
+    {code:"1000", name:"Rooms"},
+    {code:"1030", name:"Housekeeping"},
+    {code:"1100", name:"Front Office"},
+    {code:"4000", name:"Health Club & SPA"},
+    {code:"6040", name:"Human Resources"},
+    {code:"6100", name:"Information and Telecommunication Systems"}
+  ],
+  accounts: {
+    "15240":{desc:"VAT Input (recoverable)", bs:true},
+    "22180":{desc:"Supplier / Trade Payables control", bs:true},
+    "60420":{desc:"I.T Telecommunications"},
+    "60535":{desc:"Operating Supplies"},
+    "60515":{desc:"Miscellaneous"},
+    "50000":{desc:"Basic Salary"},
+    "50600":{desc:"Executive Committee Bonus"},
+    "51300":{desc:"Gratuity"},
+    "52100":{desc:"Retirement Pension Fund"},
+    "52502":{desc:"Housing Allowance"},
+    "52510":{desc:"Home Leave Ticket"},
+    "96010":{desc:"Standard Hours in Month", stat:true},
+    "96020":{desc:"Overtime Hours 1.25", stat:true},
+    "96130":{desc:"FTE", stat:true},
+    "45100":{desc:"Staff Cafeteria Allocation"},
+    "45300":{desc:"Staff Housing Allocation"},
+    "45400":{desc:"Laundry Allocation"},
+    "60185":{desc:"Complimentary Services / Gifts"},
+    "60190":{desc:"Contract Services"},
+    "60195":{desc:"Corporate Office Reimbursable"},
+    "60210":{desc:"Decorations"},
+    "60230":{desc:"Dues and Subscriptions"},
+    "60255":{desc:"Entertainment—In-House"},
+    "60260":{desc:"Equipment Rental"},
+    "60335":{desc:"Human Resources"},
+    "60465":{desc:"Legal Services"},
+    "60470":{desc:"Licenses and Permits"},
+    "60570":{desc:"Payroll Processing"},
+    "60640":{desc:"Staff Transportation"},
+    "60675":{desc:"Training"},
+    "60680":{desc:"Travel—Meals & Enter."},
+    "60685":{desc:"Travel—Other"},
+    "60690":{desc:"Uniform Costs"},
+    "60695":{desc:"Uniform Laundry"}
+  },
+  mapping: {
+    "60420":["6100"],
+    "60535":["4000","6040"],
+    "60515":["4000","6040"],
+    "50000":["6040"],"50600":["6040"],"51300":["6040"],"52100":["6040"],"52502":["6040"],"52510":["6040"],
+    "96010":["6040"],"96020":["6040"],"96130":["6040"],
+    "45100":["6040"],"45300":["6040"],"45400":["6040"],
+    "60185":["6040"],"60190":["6040"],"60195":["6040"],"60210":["6040"],"60230":["6040"],
+    "60255":["6040"],"60260":["6040"],"60335":["6040"],"60465":["6040"],"60470":["6040"],
+    "60570":["6040"],"60640":["6040"],"60675":["6040"],"60680":["6040"],"60685":["6040"],
+    "60690":["6040"],"60695":["6040"]
+  },
+  hrCodes: [
+    {code:"335001", name:"Advertising — recruiting"},
+    {code:"335008", name:"Interview expenses"},
+    {code:"335019", name:"Relocation costs"},
+    {code:"335025", name:"Visa costs for an ex-pat employee"}
+  ]
+};
+
+/* --------------------------- FULL REFERENCE DATA -------------------------
+   Extracted directly from Mapping_between_Sun_Departments_and_Accounts_Aug-2026.xlsx
+   (COA sheet: 691 GL accounts + 121 supplier subledger accounts C00001-C00121;
+   Mapping Final P&L Account sheet: 52 departments, 403 account→department
+   mappings; Analysis Code sheet: 24 HR reason codes, 13 pay-class codes,
+   44 nationality codes). No figures below are invented — every account,
+   department, mapping and code is copied verbatim from that file. */
+const FULL_REF = {"demo":false,"mapWarn":false,"departments":[{"code":"1000","name":"Rooms"},{"code":"1010","name":"Front Office"},{"code":"1020","name":"Reservations"},{"code":"1030","name":"Housekeeping"},{"code":"1040","name":"Concierge"},{"code":"1200","name":"Residential Revenue"},{"code":"1210","name":"Residential Front Office"},{"code":"1220","name":"Residential Reservations"},{"code":"1230","name":"Residential Housekeeping"},{"code":"2000","name":"Food & Beverage Department"},{"code":"2100","name":"F&B Management"},{"code":"2200","name":"Kitchen"},{"code":"2300","name":"Stewarding"},{"code":"2400","name":"Room Service"},{"code":"2500","name":"Banquets"},{"code":"2600","name":"Catering"},{"code":"2700","name":"Minibar"},{"code":"2800","name":"Terace Coffee Shop"},{"code":"2900","name":"Tiran Main Restaurant"},{"code":"3000","name":"Al Nawras Restaurants"},{"code":"3100","name":"Italian Restaurant"},{"code":"3200","name":"Indian Restaurant"},{"code":"3300","name":"Mexican Restaurant"},{"code":"3400","name":"Brazilian Restaurant"},{"code":"3500","name":"Japanese Restaurant"},{"code":"3600","name":"Argantini Restaurant"},{"code":"4000","name":"Health Club & SPA"},{"code":"4100","name":"Gift Shop"},{"code":"4200","name":"Golf"},{"code":"4300","name":"Parking"},{"code":"4400","name":"Kids Club"},{"code":"4500","name":"Laundry & Valet"},{"code":"4600","name":"Business Centre"},{"code":"4700","name":"Telecommunication"},{"code":"4800","name":"Employee Cafeteria"},{"code":"4900","name":"Employee Housing"},{"code":"5000","name":"Miscellaneous Income"},{"code":"6000","name":"A&G Dept."},{"code":"6010","name":"Executive Office"},{"code":"6020","name":"Finance"},{"code":"6030","name":"Purchasing"},{"code":"6040","name":"Human Resources"},{"code":"6050","name":"Security"},{"code":"6100","name":"Information and telecommunication Systems"},{"code":"6200","name":"Sales & Marketing"},{"code":"6300","name":"PO&M Dept."},{"code":"6400","name":"Utilities"},{"code":"7000","name":"Management Fees"},{"code":"7500","name":"Non Operating Income and Expenses"},{"code":"8000","name":"Replacement Reserve"},{"code":"8500","name":"Owner Cost"},{"code":"9000","name":"No Department"}],"accounts":{"1":{"desc":"Cash","bs":true,"stat":false},"10010":{"desc":"Cash Fund General Cashier","bs":true,"stat":false},"10020":{"desc":"Cash Fund Purchasing","bs":true,"stat":false},"10030":{"desc":"Cash Fund Fornt Office","bs":true,"stat":false},"10040":{"desc":"Cash Fund Human Resources","bs":true,"stat":false},"10050":{"desc":"Cash Fund Food & Beverage","bs":true,"stat":false},"10060":{"desc":"Cash Fund SPA","bs":true,"stat":false},"10070":{"desc":"Cash Fund Concireage","bs":true,"stat":false},"10080":{"desc":"Cash Fund Other","bs":true,"stat":false},"10100":{"desc":"Bank  Al Riyad","bs":true,"stat":false},"10200":{"desc":"Bank  Al Riyad POS","bs":true,"stat":false},"10300":{"desc":"Bank  Al Riyad 9941","bs":true,"stat":false},"10400":{"desc":"Payroll Bank Account","bs":true,"stat":false},"10600":{"desc":"FF&& Capital Reserve Bank Account","bs":true,"stat":false},"10700":{"desc":"POS & Online Payment Account","bs":true,"stat":false},"10800":{"desc":"Bank Al Rajhi","bs":true,"stat":false},"11000":{"desc":"Clearance Account","bs":true,"stat":false},"11100":{"desc":"Cash Collection Clearance","bs":true,"stat":false},"11200":{"desc":"City ledger Clearance","bs":true,"stat":false},"11300":{"desc":"Credit Card Clearance","bs":true,"stat":false},"11400":{"desc":"Cashier Over/Short Clearance","bs":true,"stat":false},"12010":{"desc":"Guest Ledger","bs":true,"stat":false},"12020":{"desc":"City Ledger","bs":true,"stat":false},"12030":{"desc":"Visa","bs":true,"stat":false},"12040":{"desc":"Span(Mada)","bs":true,"stat":false},"12050":{"desc":"American Express","bs":true,"stat":false},"12060":{"desc":"Mastercard","bs":true,"stat":false},"12070":{"desc":"Jcb","bs":true,"stat":false},"12080":{"desc":"Other Credit Cards","bs":true,"stat":false},"12090":{"desc":"Returned Checks","bs":true,"stat":false},"12100":{"desc":"Other","bs":true,"stat":false},"12200":{"desc":"Cancellation Billed - Not Received","bs":true,"stat":false},"12300":{"desc":"Attrition Billed - Not Received","bs":true,"stat":false},"12400":{"desc":"Allowance For Doubtful Accts","bs":true,"stat":false},"13100":{"desc":"A/R Employee Travel Allowances","bs":true,"stat":false},"13110":{"desc":"A/R Employee Shortages","bs":true,"stat":false},"13120":{"desc":"A/R Employee Salary Advances","bs":true,"stat":false},"13130":{"desc":"A/R Insurance Claims","bs":true,"stat":false},"13140":{"desc":"A/R Security Deposits","bs":true,"stat":false},"13150":{"desc":"A/R Staff Loans","bs":true,"stat":false},"13160":{"desc":"A/R Staff City Ledger","bs":true,"stat":false},"14010":{"desc":"Food Inventory","bs":true,"stat":false},"14020":{"desc":"Food Kitchen","bs":true,"stat":false},"14030":{"desc":"Food Outlet","bs":true,"stat":false},"14040":{"desc":"Beverage Inventory","bs":true,"stat":false},"14050":{"desc":"Beverage Outlet","bs":true,"stat":false},"14060":{"desc":"Tobacco Inventory","bs":true,"stat":false},"14070":{"desc":"General Inventory","bs":true,"stat":false},"14080":{"desc":"Cleaning Supplies Inventory","bs":true,"stat":false},"14090":{"desc":"Paper Supplies Inventory","bs":true,"stat":false},"14100":{"desc":"Printing & Stationary Inventory","bs":true,"stat":false},"14110":{"desc":"Fuel Inventory","bs":true,"stat":false},"14120":{"desc":"Maintenance Supplies Inventory","bs":true,"stat":false},"14130":{"desc":"Other Operating Supplies Inventory","bs":true,"stat":false},"14140":{"desc":"SPA Retail Products Inventory","bs":true,"stat":false},"14150":{"desc":"SPA Treatment Products Inventory","bs":true,"stat":false},"14160":{"desc":"Guest Supplies Inventory","bs":true,"stat":false},"14170":{"desc":"Gift Shop Retail Inventory","bs":true,"stat":false},"14180":{"desc":"Bathrobes Inventory","bs":true,"stat":false},"14190":{"desc":"Laundry Supplies Inventory","bs":true,"stat":false},"14200":{"desc":"Laundry Chemicals Inventory","bs":true,"stat":false},"14300":{"desc":"Linen Inventory","bs":true,"stat":false},"14310":{"desc":"Chinaware Inventory","bs":true,"stat":false},"14320":{"desc":"Glassware Inventory","bs":true,"stat":false},"14330":{"desc":"Silverware Inventory","bs":true,"stat":false},"14340":{"desc":"Kitchen Utensils Inventory","bs":true,"stat":false},"14350":{"desc":"Uniforms Inventory","bs":true,"stat":false},"14360":{"desc":"Menus Inventory","bs":true,"stat":false},"14370":{"desc":"Brochures Inventory","bs":true,"stat":false},"14380":{"desc":"Other Operating Equipment Inventory","bs":true,"stat":false},"14500":{"desc":"Main Warehouse Hotels Group Inventory","bs":true,"stat":false},"15010":{"desc":"PPD New Projects_x000D_","bs":true,"stat":false},"15020":{"desc":"PPD Insurance","bs":true,"stat":false},"15030":{"desc":"PPD Contracts","bs":true,"stat":false},"15040":{"desc":"PPD Licenses","bs":true,"stat":false},"15050":{"desc":"PPD Building Rent","bs":true,"stat":false},"15060":{"desc":"PPD Dues & Subscriptions","bs":true,"stat":false},"15080":{"desc":"PPD Music & Entertainment","bs":true,"stat":false},"15090":{"desc":"PPD Equipment Rental","bs":true,"stat":false},"15100":{"desc":"PPD Special Deposits","bs":true,"stat":false},"15120":{"desc":"PPD Advertising","bs":true,"stat":false},"15130":{"desc":"PPD Postage","bs":true,"stat":false},"15140":{"desc":"PPD Uniforms - Rooms","bs":true,"stat":false},"15150":{"desc":"PPD Uniforms - F&B","bs":true,"stat":false},"15160":{"desc":"PPD Oper. Equip Rooms","bs":true,"stat":false},"15170":{"desc":"PPD Oper. Equip F&B","bs":true,"stat":false},"15180":{"desc":"PPD Operation Purchasing","bs":true,"stat":false},"15190":{"desc":"PPD Owners Costs Purchases","bs":true,"stat":false},"15200":{"desc":"PPD Property Taxes","bs":true,"stat":false},"15210":{"desc":"PPD Utilities Expenses","bs":true,"stat":false},"15220":{"desc":"PPD Rent","bs":true,"stat":false},"15230":{"desc":"PPD VISA,WORK PERMIT, AND IQAMA RENEWAL","bs":true,"stat":false},"15240":{"desc":"PPD VAT Purchasing 15%","bs":true,"stat":false},"15250":{"desc":"PPD Advances","bs":true,"stat":false},"15260":{"desc":"PPD Other Miscellaneous","bs":true,"stat":false},"16000":{"desc":"Intercompany Receivables - Opening","bs":true,"stat":false},"16010":{"desc":"Intercompany Receivables - Additions","bs":true,"stat":false},"16020":{"desc":"Intercompany Receivables - Disposals","bs":true,"stat":false},"17000":{"desc":"Land","bs":true,"stat":false},"17010":{"desc":"Buildings","bs":true,"stat":false},"17020":{"desc":"Leaseholds","bs":true,"stat":false},"17030":{"desc":"Leasehold Improvements","bs":true,"stat":false},"17040":{"desc":"Business & Office Equipment","bs":true,"stat":false},"17050":{"desc":"Furniture & Fittings","bs":true,"stat":false},"17060":{"desc":"Machinery","bs":true,"stat":false},"17070":{"desc":"Information Systems (Hardware only)","bs":true,"stat":false},"17080":{"desc":"Vehicles","bs":true,"stat":false},"17090":{"desc":"Special Projects  /Work in Progress","bs":true,"stat":false},"17100":{"desc":"FF&E - Opening","bs":true,"stat":false},"17101":{"desc":"FF&E - Additions","bs":true,"stat":false},"17102":{"desc":"FF&E - Disposals","bs":true,"stat":false},"17110":{"desc":"Pre-Opening - Opening","bs":true,"stat":false},"17111":{"desc":"Pre-Opening - Additions","bs":true,"stat":false},"17112":{"desc":"Pre-Opening - Disposals","bs":true,"stat":false},"17700":{"desc":"Accum. Depreciation Buildings","bs":true,"stat":false},"17710":{"desc":"Accum. Depreciation Leaseholds","bs":true,"stat":false},"17720":{"desc":"Accum. Depreciation Leasehold Impovements","bs":true,"stat":false},"17730":{"desc":"Accum. Depreciation Business & Office Equipment","bs":true,"stat":false},"17740":{"desc":"Accum. Depreciation Furniture & Fittings","bs":true,"stat":false},"17750":{"desc":"Accum. Depreciation Machinery","bs":true,"stat":false},"17760":{"desc":"Accum. Depreciation Informat. Systems (Hardw only)","bs":true,"stat":false},"17770":{"desc":"Accum. Depreciation Vehicles","bs":true,"stat":false},"18100":{"desc":"Salaries & wages","bs":true,"stat":false},"18101":{"desc":"Payroll related expenses","bs":true,"stat":false},"18102":{"desc":"Staff Accomodation Expenses","bs":true,"stat":false},"18103":{"desc":"Recruitment Airticket","bs":true,"stat":false},"18104":{"desc":"Visas & Local fees","bs":true,"stat":false},"18105":{"desc":"Recruitment","bs":true,"stat":false},"18106":{"desc":"Staff Asssitance & Support","bs":true,"stat":false},"18107":{"desc":"Employee Development","bs":true,"stat":false},"18201":{"desc":"Corporate Identity / Artworks","bs":true,"stat":false},"18202":{"desc":"Direct mail & Sales promotions","bs":true,"stat":false},"18203":{"desc":"Give aways","bs":true,"stat":false},"18204":{"desc":"Trade Shows and Exhibitions","bs":true,"stat":false},"18205":{"desc":"Media Advertisements","bs":true,"stat":false},"18206":{"desc":"Opening Ceremony / Plaque","bs":true,"stat":false},"18207":{"desc":"Pre opening Brochures / Litera","bs":true,"stat":false},"18301":{"desc":"Cleaning & Other Supplies","bs":true,"stat":false},"18302":{"desc":"Communications","bs":true,"stat":false},"18303":{"desc":"Contract Services","bs":true,"stat":false},"18304":{"desc":"Engineering Supplies","bs":true,"stat":false},"18305":{"desc":"Food Tasting & Training","bs":true,"stat":false},"18306":{"desc":"Information Systems","bs":true,"stat":false},"18307":{"desc":"Insurance","bs":true,"stat":false},"18308":{"desc":"Legal Expenses","bs":true,"stat":false},"18309":{"desc":"Market Survey / Entertainment","bs":true,"stat":false},"18310":{"desc":"Office Supplies","bs":true,"stat":false},"18311":{"desc":"Operational Supplies","bs":true,"stat":false},"18312":{"desc":"Transportation","bs":true,"stat":false},"18313":{"desc":"Travelling Expenses","bs":true,"stat":false},"18314":{"desc":"Utility","bs":true,"stat":false},"18315":{"desc":"Misc Pre Opening Expenses","bs":true,"stat":false},"18316":{"desc":"Net Revenue Transfer from P&L","bs":true,"stat":false},"18500":{"desc":"Pre opening Expenses-offset","bs":true,"stat":false},"19000":{"desc":"Patents","bs":true,"stat":false},"19100":{"desc":"Trademarks","bs":true,"stat":false},"19200":{"desc":"Goodwill","bs":true,"stat":false},"19300":{"desc":"Rights","bs":true,"stat":false},"19400":{"desc":"Concessions, Software & Licenses","bs":true,"stat":false},"19500":{"desc":"Other intangible assets","bs":true,"stat":false},"20010":{"desc":"Bank Overdraft","bs":true,"stat":false},"21010":{"desc":"A/P Trade","bs":true,"stat":false},"21020":{"desc":"A/P-Refund Deposits","bs":true,"stat":false},"21030":{"desc":"A/P-Advance Deposits","bs":true,"stat":false},"21040":{"desc":"A/P-Gift Certificates","bs":true,"stat":false},"21050":{"desc":"A/P-Security Deposits","bs":true,"stat":false},"21060":{"desc":"A/P-Paid Tips","bs":true,"stat":false},"21070":{"desc":"A/P-Due Backs","bs":true,"stat":false},"21080":{"desc":"A/P-H.O. Management/Incentive Fees","bs":true,"stat":false},"21090":{"desc":"A/P-Unclaimed Wages","bs":true,"stat":false},"21100":{"desc":"A/P-Consignment","bs":true,"stat":false},"21110":{"desc":"A/P-Post dated Cheques","bs":true,"stat":false},"21130":{"desc":"A/P-Municipality Fees","bs":true,"stat":false},"21140":{"desc":"A/P-Equipment Rental","bs":true,"stat":false},"21150":{"desc":"A/P-Service Charge Payable","bs":true,"stat":false},"21160":{"desc":"A/P-Employee Sales Commissions","bs":true,"stat":false},"21180":{"desc":"A/P-Commission","bs":true,"stat":false},"21190":{"desc":"A/P-Sales VAT 15%","bs":true,"stat":false},"21200":{"desc":"A/P-Fines & Penalties","bs":true,"stat":false},"21390":{"desc":"A/P-Other","bs":true,"stat":false},"22010":{"desc":"Accrued Payroll","bs":true,"stat":false},"22020":{"desc":"Accrued Payroll Taxes","bs":true,"stat":false},"22030":{"desc":"Accrued Vacation Pay","bs":true,"stat":false},"22040":{"desc":"Accrued Sick Pay","bs":true,"stat":false},"22050":{"desc":"Accrued PH, Days off and Overtime","bs":true,"stat":false},"22060":{"desc":"Accrued Mgmt. Bonus","bs":true,"stat":false},"22070":{"desc":"Accrued Gratuity","bs":true,"stat":false},"22080":{"desc":"Accrued GOSI Local","bs":true,"stat":false},"22090":{"desc":"Accrued GOSI Expat.","bs":true,"stat":false},"22110":{"desc":"Accrued Staff  Party","bs":true,"stat":false},"22120":{"desc":"Accrued G.M Pension","bs":true,"stat":false},"22130":{"desc":"Accrued Staff Transportation","bs":true,"stat":false},"22140":{"desc":"Accrued Employee Housing Expense","bs":true,"stat":false},"22150":{"desc":"Accrued Municipality Fee","bs":true,"stat":false},"22160":{"desc":"Accrued Limousine Service","bs":true,"stat":false},"22170":{"desc":"Accrued Health Club Membership","bs":true,"stat":false},"22180":{"desc":"Accrued Telecommunication","bs":true,"stat":false},"22190":{"desc":"Accrued Utilities (Elect. , Water, LP Gas, etc.)","bs":true,"stat":false},"22200":{"desc":"Accrued Marketing & Advertising Expenses","bs":true,"stat":false},"22210":{"desc":"Accrued Trade Shows","bs":true,"stat":false},"22220":{"desc":"Accrued Contract Services","bs":true,"stat":false},"22230":{"desc":"Accrued  Banquet share","bs":true,"stat":false},"22240":{"desc":"Accrued Insurance","bs":true,"stat":false},"22250":{"desc":"Accrued Credit Card Commission","bs":true,"stat":false},"22260":{"desc":"Accrued License and Taxes","bs":true,"stat":false},"22270":{"desc":"Accrued Loyalty Program Expense","bs":true,"stat":false},"22280":{"desc":"Accrued Travel Agent Commission","bs":true,"stat":false},"22290":{"desc":"Accrued Recruitment Expenses","bs":true,"stat":false},"22300":{"desc":"Accrued Security Services","bs":true,"stat":false},"22310":{"desc":"Accrued Front Office Incentive","bs":true,"stat":false},"22320":{"desc":"Accrued Central Reservation Incentive","bs":true,"stat":false},"22330":{"desc":"Accrued Sales Maganers Incentive","bs":true,"stat":false},"22340":{"desc":"Accrued Visa,Work Permit, Iqama","bs":true,"stat":false},"22350":{"desc":"Accrued Pre Opening Exp","bs":true,"stat":false},"22360":{"desc":"Accrued VAT Payable","bs":true,"stat":false},"22370":{"desc":"Accrued Other","bs":true,"stat":false},"22500":{"desc":"Provision for Legal And Audit","bs":true,"stat":false},"22510":{"desc":"Provision for Professional Fee","bs":true,"stat":false},"22520":{"desc":"Provision for F&B Chinaware","bs":true,"stat":false},"22530":{"desc":"Provision for F&B Glassware","bs":true,"stat":false},"22540":{"desc":"Provision for F&B Linen","bs":true,"stat":false},"22550":{"desc":"Provision for F&B Silverware/F","bs":true,"stat":false},"22560":{"desc":"Provision for Kitchen Utensils","bs":true,"stat":false},"22570":{"desc":"Provision Linen-Rooms","bs":true,"stat":false},"22580":{"desc":"Provision Linen-F&B","bs":true,"stat":false},"22590":{"desc":"Provision Linen-SPA","bs":true,"stat":false},"22600":{"desc":"Provision Uniforms-Rooms","bs":true,"stat":false},"22610":{"desc":"Provision Uniforms-F&B","bs":true,"stat":false},"22620":{"desc":"Provision Uniforms-M.O.D","bs":true,"stat":false},"22630":{"desc":"Provision for School Fees","bs":true,"stat":false},"22640":{"desc":"Provision for Employees Tickets","bs":true,"stat":false},"22650":{"desc":"Provision for Vacation Pay","bs":true,"stat":false},"22660":{"desc":"Provision for End Of Service Pay","bs":true,"stat":false},"22670":{"desc":"Provision for Bad Debts&Doubtful Accounts","bs":true,"stat":false},"22680":{"desc":"Provision for Zakah","bs":true,"stat":false},"23100":{"desc":"Advance Rental  Health Club Me","bs":true,"stat":false},"25010":{"desc":"Owners Capital Account","bs":true,"stat":false},"25020":{"desc":"Working Capital","bs":true,"stat":false},"25030":{"desc":"Preopening Advance","bs":true,"stat":false},"25040":{"desc":"Preopening Expense","bs":true,"stat":false},"25100":{"desc":"Intercompany Account Pre-Opening","bs":true,"stat":false},"25110":{"desc":"Intercompany Account Cash","bs":true,"stat":false},"25120":{"desc":"Transfer to FFE Reserve","bs":true,"stat":false},"25130":{"desc":"Payment to Owner","bs":true,"stat":false},"25140":{"desc":"intercompany Waves For Hotel Services","bs":true,"stat":false},"25200":{"desc":"intercompany Waves 2","bs":true,"stat":false},"25210":{"desc":"intercompany Waves 3","bs":true,"stat":false},"25220":{"desc":"intercompany Waves 4","bs":true,"stat":false},"25400":{"desc":"Intercompany Account Projects","bs":true,"stat":false},"25500":{"desc":"Intercompany Account Head Office","bs":true,"stat":false},"26000":{"desc":"F. F. & E. Reserve","bs":true,"stat":false},"26100":{"desc":"F. F. & E. Purchases","bs":true,"stat":false},"29101":{"desc":"Current Year Earnings","bs":true,"stat":false},"29102":{"desc":"Retained Earnings 2022","bs":true,"stat":false},"29103":{"desc":"Retained Earnings 2023","bs":true,"stat":false},"29104":{"desc":"Retained Earnings 2024","bs":true,"stat":false},"29105":{"desc":"Retained Earnings 2025","bs":true,"stat":false},"29106":{"desc":"Retained Earnings 2026","bs":true,"stat":false},"29107":{"desc":"Retained Earnings 2027","bs":true,"stat":false},"30000":{"desc":"Room Rate Revenue","bs":false,"stat":false},"30010":{"desc":"Room Charge Extra","bs":false,"stat":false},"30020":{"desc":"Crib/Baby cot","bs":false,"stat":false},"30030":{"desc":"Extra bed","bs":false,"stat":false},"30040":{"desc":"Day Use","bs":false,"stat":false},"30050":{"desc":"Late Check Out","bs":false,"stat":false},"30060":{"desc":"No-Shows Room","bs":false,"stat":false},"30099":{"desc":"Other Room Revenue","bs":false,"stat":false},"30100":{"desc":"Food Revenue","bs":false,"stat":false},"30199":{"desc":"Other Food Revenue","bs":false,"stat":false},"30200":{"desc":"Beverage Revenue","bs":false,"stat":false},"30299":{"desc":"Other Beverage Revenue","bs":false,"stat":false},"30400":{"desc":"Audio-visual Revenue","bs":false,"stat":false},"30410":{"desc":"Function Room Rental and Setup Charges","bs":false,"stat":false},"30420":{"desc":"Cover Charges","bs":false,"stat":false},"30430":{"desc":"Surcharges and Service Charges","bs":false,"stat":false},"30440":{"desc":"Corkage","bs":false,"stat":false},"30499":{"desc":"F&B Miscellaneous Other Revenue","bs":false,"stat":false},"30500":{"desc":"Massage and Body Treatment for Woman","bs":false,"stat":false},"30501":{"desc":"Skin Care Revenue","bs":false,"stat":false},"30502":{"desc":"Hair Care Revenue","bs":false,"stat":false},"30503":{"desc":"Nail Care Revenue","bs":false,"stat":false},"30520":{"desc":"Fitness Revenue","bs":false,"stat":false},"30521":{"desc":"Spa No Show","bs":false,"stat":false},"30522":{"desc":"Health Club Membership Revenue","bs":false,"stat":false},"30523":{"desc":"Spa Membership","bs":false,"stat":false},"30524":{"desc":"Other SPA Revenue","bs":false,"stat":false},"30550":{"desc":"Spa Massage Package","bs":false,"stat":false},"30551":{"desc":"Spa Others Package","bs":false,"stat":false},"30552":{"desc":"Spa & Health Club Ladies","bs":false,"stat":false},"30553":{"desc":"Spa & Health Club Men","bs":false,"stat":false},"30554":{"desc":"Equipment Rental Revenue","bs":false,"stat":false},"30599":{"desc":"Miscellaneous Club Revenue","bs":false,"stat":false},"31000":{"desc":"Men's Clothing","bs":false,"stat":false},"31001":{"desc":"Women's Clothing","bs":false,"stat":false},"31002":{"desc":"Children's Clothing","bs":false,"stat":false},"31003":{"desc":"Accessories Apparel","bs":false,"stat":false},"31004":{"desc":"Visors/Hats/Caps","bs":false,"stat":false},"31005":{"desc":"Shoes","bs":false,"stat":false},"31006":{"desc":"Clothing Other","bs":false,"stat":false},"31100":{"desc":"Jewellery 1","bs":false,"stat":false},"31150":{"desc":"Newspapers & Magazines","bs":false,"stat":false},"31200":{"desc":"Candy","bs":false,"stat":false},"31201":{"desc":"Gifts","bs":false,"stat":false},"31202":{"desc":"Flowers","bs":false,"stat":false},"31203":{"desc":"Drugs","bs":false,"stat":false},"31204":{"desc":"Tobacco","bs":false,"stat":false},"31205":{"desc":"Other Sundry","bs":false,"stat":false},"31206":{"desc":"Mattress Revenue","bs":false,"stat":false},"31301":{"desc":"Equipment","bs":false,"stat":false},"31399":{"desc":"Other Retail Revenue","bs":false,"stat":false},"32000":{"desc":"Local Call Revenue","bs":false,"stat":false},"32001":{"desc":"Long Distance Call Revenue","bs":false,"stat":false},"32002":{"desc":"Telecom Service Charge Received","bs":false,"stat":false},"32003":{"desc":"High Speed Internet Revenue","bs":false,"stat":false},"32099":{"desc":"Other Telecom Revenue","bs":false,"stat":false},"33000":{"desc":"Self-Parking Revenue","bs":false,"stat":false},"33100":{"desc":"Valet Parking Revenue","bs":false,"stat":false},"33200":{"desc":"Car washing","bs":false,"stat":false},"33299":{"desc":"Other Garage & Parking Revenue","bs":false,"stat":false},"33300":{"desc":"Laundry Revenue","bs":false,"stat":false},"33310":{"desc":"Dry Cleaning Revenue","bs":false,"stat":false},"33320":{"desc":"Valet  Revenue","bs":false,"stat":false},"33399":{"desc":"Other Laundry Dept. Revenue","bs":false,"stat":false},"34000":{"desc":"Greens Fee Revenue","bs":false,"stat":false},"34050":{"desc":"Tournament Fee Revenue","bs":false,"stat":false},"34100":{"desc":"Golf Cart Rental Revenue","bs":false,"stat":false},"34150":{"desc":"Golf Equipment Rental Revenue","bs":false,"stat":false},"34200":{"desc":"Practice Range Fee Revenue","bs":false,"stat":false},"34250":{"desc":"Lesson Fee Revenue","bs":false,"stat":false},"34300":{"desc":"Golf Club Maintenance Revenue","bs":false,"stat":false},"34350":{"desc":"Storage Fee Revenue","bs":false,"stat":false},"34400":{"desc":"Golf Membership Fee Revenue","bs":false,"stat":false},"34450":{"desc":"Merchandise Revenue","bs":false,"stat":false},"34500":{"desc":"Clothing Revenue","bs":false,"stat":false},"34599":{"desc":"Golf Other Revenue","bs":false,"stat":false},"35000":{"desc":"Court Fees Tennis","bs":false,"stat":false},"35100":{"desc":"Daily Fees","bs":false,"stat":false},"36000":{"desc":"Attrition Fees","bs":false,"stat":false},"36001":{"desc":"Cancellation Fees","bs":false,"stat":false},"36002":{"desc":"Cash Discounts Earned","bs":false,"stat":false},"36003":{"desc":"Commissions","bs":false,"stat":false},"36004":{"desc":"Guest Foreign Currency Transaction Gains (Losses)","bs":false,"stat":false},"36005":{"desc":"Interest Income","bs":false,"stat":false},"36006":{"desc":"Net Revenue from Renting Mixed-Ownership Units","bs":false,"stat":false},"36007":{"desc":"Other Breakage","bs":false,"stat":false},"36008":{"desc":"Package Breakage","bs":false,"stat":false},"36009":{"desc":"Proceeds from Business Interruption Insurance","bs":false,"stat":false},"36010":{"desc":"Resort Fees","bs":false,"stat":false},"36011":{"desc":"Space Rental and Concessions","bs":false,"stat":false},"36012":{"desc":"Pay TV Revenues","bs":false,"stat":false},"36013":{"desc":"In-Room Entertainment","bs":false,"stat":false},"36014":{"desc":"Cabana","bs":false,"stat":false},"36100":{"desc":"Other","bs":false,"stat":false},"36101":{"desc":"Apartment Rental","bs":false,"stat":false},"36102":{"desc":"Office Building Rental","bs":false,"stat":false},"36103":{"desc":"Shop Rental","bs":false,"stat":false},"36104":{"desc":"Showcase Rental","bs":false,"stat":false},"36105":{"desc":"Beauty Saloon Rental","bs":false,"stat":false},"36106":{"desc":"Flower Workshop Rental","bs":false,"stat":false},"36107":{"desc":"Limousines and Car Hire Rental","bs":false,"stat":false},"38000":{"desc":"Service Charge Revenue","bs":false,"stat":false},"38001":{"desc":"Service Charge Revenue - Distribution","bs":false,"stat":false},"38500":{"desc":"Allowances","bs":false,"stat":false},"40000":{"desc":"Food Cost","bs":false,"stat":false},"40001":{"desc":"Bar to Food","bs":false,"stat":false},"40002":{"desc":"Freight on Food","bs":false,"stat":false},"40100":{"desc":"Beverage Cost","bs":false,"stat":false},"40102":{"desc":"Food to Bar","bs":false,"stat":false},"40103":{"desc":"Other Cost","bs":false,"stat":false},"40300":{"desc":"F&B Misc. Cost","bs":false,"stat":false},"40400":{"desc":"Audio visual Cost","bs":false,"stat":false},"40500":{"desc":"Misc. Cost (of Other Revenue)","bs":false,"stat":false},"41000":{"desc":"Cost of Men's Clothing","bs":false,"stat":false},"41001":{"desc":"Cost of Women's Clothing","bs":false,"stat":false},"41002":{"desc":"Cost of Children's Clothing","bs":false,"stat":false},"41003":{"desc":"Cost of Accessories Apparel","bs":false,"stat":false},"41004":{"desc":"Cost of Visors/Hats/Caps","bs":false,"stat":false},"41005":{"desc":"Cost of Shoes","bs":false,"stat":false},"41006":{"desc":"Cost of Clothing Other","bs":false,"stat":false},"41100":{"desc":"Cost of Jewellery","bs":false,"stat":false},"41150":{"desc":"Cost of Newspapers & Magazines","bs":false,"stat":false},"41200":{"desc":"Cost of Candy","bs":false,"stat":false},"41201":{"desc":"Copst of Gifts","bs":false,"stat":false},"41202":{"desc":"Cost of Flowers","bs":false,"stat":false},"41203":{"desc":"Cost of Drugs","bs":false,"stat":false},"41204":{"desc":"Cost of Tobacco","bs":false,"stat":false},"41205":{"desc":"Cost of Other Sundry","bs":false,"stat":false},"41206":{"desc":"Cost of Mattress Revenue","bs":false,"stat":false},"41301":{"desc":"Cost of Equipment","bs":false,"stat":false},"41399":{"desc":"Cost of Other Retail Revenue","bs":false,"stat":false},"41400":{"desc":"C.O.S. Laundry","bs":false,"stat":false},"41450":{"desc":"Cost of Other OOD","bs":false,"stat":false},"41500":{"desc":"Spoilage","bs":false,"stat":false},"42000":{"desc":"Cost of Misc. Sales","bs":false,"stat":false},"43000":{"desc":"Cost of Local Calls","bs":false,"stat":false},"43010":{"desc":"Cost of Long Distance Calls","bs":false,"stat":false},"43020":{"desc":"Other Telecom Cost of Services","bs":false,"stat":false},"43030":{"desc":"Cost of Internet Services","bs":false,"stat":false},"43210":{"desc":"Outlet Meals","bs":false,"stat":false},"43211":{"desc":"Other Employee Meals Cost","bs":false,"stat":false},"45100":{"desc":"Staff Cafeteria Allocation","bs":false,"stat":false},"45200":{"desc":"Staff Transportation Allocation","bs":false,"stat":false},"45300":{"desc":"Staff Housing Allocation","bs":false,"stat":false},"45400":{"desc":"Laundry Allocation","bs":false,"stat":false},"45500":{"desc":"Electricity Chargeback","bs":false,"stat":false},"45600":{"desc":"Gas Chargeback","bs":false,"stat":false},"45700":{"desc":"Water Chargeback","bs":false,"stat":false},"50000":{"desc":"Basic Salary","bs":false,"stat":false},"50100":{"desc":"Overtime Pay","bs":false,"stat":false},"50200":{"desc":"Labour Chargeback In Pay \"Task Force\"","bs":false,"stat":false},"50300":{"desc":"Labour Chargeback Out Pay  \"Task Force\"","bs":false,"stat":false},"50350":{"desc":"Saudi HRDF charge back","bs":false,"stat":false},"50400":{"desc":"Other Payroll","bs":false,"stat":false},"50500":{"desc":"Service Charge Pay","bs":false,"stat":false},"50600":{"desc":"Executive Committee Bonus","bs":false,"stat":false},"50610":{"desc":"Department Head Bonus","bs":false,"stat":false},"50620":{"desc":"Asst. Department H. Bonus","bs":false,"stat":false},"50630":{"desc":"Sales Bonus","bs":false,"stat":false},"50640":{"desc":"Commissions Pay","bs":false,"stat":false},"50700":{"desc":"Leased Labour","bs":false,"stat":false},"50710":{"desc":"Contract Pay","bs":false,"stat":false},"51000":{"desc":"Vacation Pay","bs":false,"stat":false},"51100":{"desc":"Holiday Pay","bs":false,"stat":false},"51200":{"desc":"Sick leave  Pay","bs":false,"stat":false},"51201":{"desc":"Bereavement Pay","bs":false,"stat":false},"51300":{"desc":"Gratuity","bs":false,"stat":false},"51301":{"desc":"End Off Services","bs":false,"stat":false},"52000":{"desc":"Workers Compensation Insurance","bs":false,"stat":false},"52010":{"desc":"HOD Officer Meals_x000D_","bs":false,"stat":false},"52020":{"desc":"Employee Meals","bs":false,"stat":false},"52100":{"desc":"Retirement Pension Fund","bs":false,"stat":false},"52101":{"desc":"Unemployment Tax","bs":false,"stat":false},"52102":{"desc":"Labour Office Iqama Fees","bs":false,"stat":false},"52103":{"desc":"Passport Iqama Fees","bs":false,"stat":false},"52104":{"desc":"Local Social Insurance","bs":false,"stat":false},"52105":{"desc":"Expat Social Insurance","bs":false,"stat":false},"52106":{"desc":"Exit & Entry Fees","bs":false,"stat":false},"52107":{"desc":"Qafalah Transfer Fees","bs":false,"stat":false},"52200":{"desc":"Maternity Insurance","bs":false,"stat":false},"52201":{"desc":"Life and Disability Insurance","bs":false,"stat":false},"52300":{"desc":"Medical Ministry of Health","bs":false,"stat":false},"52301":{"desc":"Medical Insurance","bs":false,"stat":false},"52400":{"desc":"Pension Plan","bs":false,"stat":false},"52401":{"desc":"GM Pension Plan","bs":false,"stat":false},"52500":{"desc":"Payroll Tax","bs":false,"stat":false},"52501":{"desc":"Car Allowance","bs":false,"stat":false},"52502":{"desc":"Housing Allowance","bs":false,"stat":false},"52503":{"desc":"Telephone Allowance","bs":false,"stat":false},"52504":{"desc":"Food Allowance","bs":false,"stat":false},"52505":{"desc":"Education Allowance","bs":false,"stat":false},"52510":{"desc":"Home Leave Ticket","bs":false,"stat":false},"52520":{"desc":"Division Head F&B Requisitions","bs":false,"stat":false},"55100":{"desc":"Benefits Chargeback In Pay","bs":false,"stat":false},"60100":{"desc":"Agency Fees","bs":false,"stat":false},"60105":{"desc":"Ambience","bs":false,"stat":false},"60110":{"desc":"Athletic Supplies","bs":false,"stat":false},"60115":{"desc":"Audit Charges","bs":false,"stat":false},"60120":{"desc":"Bank Charges","bs":false,"stat":false},"60125":{"desc":"Banquet Expense","bs":false,"stat":false},"60130":{"desc":"Building","bs":false,"stat":false},"60135":{"desc":"Cash Overages/Shortages","bs":false,"stat":false},"60140":{"desc":"Centralized Accounting Charges","bs":false,"stat":false},"60145":{"desc":"Chilled Water","bs":false,"stat":false},"60150":{"desc":"China","bs":false,"stat":false},"60155":{"desc":"Cleaning Supplies","bs":false,"stat":false},"60160":{"desc":"Cluster Services","bs":false,"stat":false},"60165":{"desc":"Collateral Material","bs":false,"stat":false},"60170":{"desc":"Commissions and Fees—Group","bs":false,"stat":false},"60175":{"desc":"Complimentary Food and Beverage","bs":false,"stat":false},"60180":{"desc":"Complimentary In-Room/Media Entertainment","bs":false,"stat":false},"60185":{"desc":"Complimentary Services/Gifts","bs":false,"stat":false},"60190":{"desc":"Contract Services","bs":false,"stat":false},"60195":{"desc":"Corporate Office Reimbursable","bs":false,"stat":false},"60200":{"desc":"Credit and Collection","bs":false,"stat":false},"60205":{"desc":"Credit Card Commissions","bs":false,"stat":false},"60210":{"desc":"Decorations","bs":false,"stat":false},"60215":{"desc":"Direct Mail","bs":false,"stat":false},"60220":{"desc":"Dishwashing Supplies","bs":false,"stat":false},"60225":{"desc":"Donations","bs":false,"stat":false},"60230":{"desc":"Dues and Subscriptions","bs":false,"stat":false},"60235":{"desc":"Electrical and Mechanical Equipment","bs":false,"stat":false},"60240":{"desc":"Electricity","bs":false,"stat":false},"60245":{"desc":"Elevators and Escalators","bs":false,"stat":false},"60250":{"desc":"Engineering Supplies","bs":false,"stat":false},"60255":{"desc":"Entertainment—In-House","bs":false,"stat":false},"60260":{"desc":"Equipment Rental","bs":false,"stat":false},"60265":{"desc":"Familiarization Trips","bs":false,"stat":false},"60270":{"desc":"Flatware","bs":false,"stat":false},"60275":{"desc":"Floor Covering","bs":false,"stat":false},"60280":{"desc":"Franchise and Affiliation Fees—Royalties","bs":false,"stat":false},"60285":{"desc":"Franchise and Affiliation Marketing","bs":false,"stat":false},"60290":{"desc":"Furniture and Equipment","bs":false,"stat":false},"60295":{"desc":"Gas","bs":false,"stat":false},"60300":{"desc":"Gasoline and Lubricants","bs":false,"stat":false},"60305":{"desc":"Glassware","bs":false,"stat":false},"60310":{"desc":"Grounds Maintenance and Landscaping","bs":false,"stat":false},"60315":{"desc":"Guest Relocation","bs":false,"stat":false},"60320":{"desc":"Guest Supplies","bs":false,"stat":false},"60325":{"desc":"Guest Transportation","bs":false,"stat":false},"60330":{"desc":"Health and Beauty Products","bs":false,"stat":false},"60335":{"desc":"Human Resources","bs":false,"stat":false},"60340":{"desc":"HVAC Equipment","bs":false,"stat":false},"60345":{"desc":"I.T Administrative and General","bs":false,"stat":false},"60350":{"desc":"I.T Centralized Information System Charges","bs":false,"stat":false},"60355":{"desc":"I.T Energy Management","bs":false,"stat":false},"60360":{"desc":"I.T Food and Beverage","bs":false,"stat":false},"60365":{"desc":"I.T Golf","bs":false,"stat":false},"60370":{"desc":"I.T Hardware","bs":false,"stat":false},"60375":{"desc":"I.T Health Club/Spa","bs":false,"stat":false},"60380":{"desc":"I.T Human Resources","bs":false,"stat":false},"60385":{"desc":"I.T Information Security","bs":false,"stat":false},"60390":{"desc":"I.T Information Systems","bs":false,"stat":false},"60395":{"desc":"I.T Other Equipment","bs":false,"stat":false},"60400":{"desc":"I.T Parking","bs":false,"stat":false},"60405":{"desc":"I.T Property Operation and Maintenance","bs":false,"stat":false},"60410":{"desc":"I.T Rooms","bs":false,"stat":false},"60415":{"desc":"I.T Sales and Marketing","bs":false,"stat":false},"60420":{"desc":"I.T Telecommunications","bs":false,"stat":false},"60425":{"desc":"Ice","bs":false,"stat":false},"60430":{"desc":"In-House Graphics","bs":false,"stat":false},"60435":{"desc":"Irrigation","bs":false,"stat":false},"60440":{"desc":"Kitchen Equipment","bs":false,"stat":false},"60445":{"desc":"Kitchen Fuel","bs":false,"stat":false},"60450":{"desc":"Kitchen Smallwares","bs":false,"stat":false},"60455":{"desc":"Laundry and Dry Cleaning","bs":false,"stat":false},"60460":{"desc":"Laundry Equipment","bs":false,"stat":false},"60465":{"desc":"Legal Services","bs":false,"stat":false},"60470":{"desc":"Licenses and Permits","bs":false,"stat":false},"60475":{"desc":"Life/Safety","bs":false,"stat":false},"60480":{"desc":"Light Bulbs","bs":false,"stat":false},"60485":{"desc":"Linen","bs":false,"stat":false},"60490":{"desc":"Loss and Damage","bs":false,"stat":false},"60495":{"desc":"Loyalty Programs","bs":false,"stat":false},"60500":{"desc":"Management Fees","bs":false,"stat":false},"60505":{"desc":"Media","bs":false,"stat":false},"60510":{"desc":"Menus and Beverage Lists","bs":false,"stat":false},"60515":{"desc":"Miscellaneous","bs":false,"stat":false},"60520":{"desc":"Music and Entertainment","bs":false,"stat":false},"60525":{"desc":"Non-G-RelatedExchange Gains (Losses)","bs":false,"stat":false},"60530":{"desc":"Oil","bs":false,"stat":false},"60535":{"desc":"Operating Supplies","bs":false,"stat":false},"60540":{"desc":"Other Fuels","bs":false,"stat":false},"60545":{"desc":"Outside Sales Representation","bs":false,"stat":false},"60550":{"desc":"Outside Services Market Research","bs":false,"stat":false},"60555":{"desc":"Outside Signage","bs":false,"stat":false},"60560":{"desc":"Painting and Wallcovering","bs":false,"stat":false},"60565":{"desc":"Paper and Plastics","bs":false,"stat":false},"60570":{"desc":"Payroll Processing","bs":false,"stat":false},"60575":{"desc":"Photography","bs":false,"stat":false},"60580":{"desc":"Plumbing","bs":false,"stat":false},"60585":{"desc":"Postage and Overnight Delivery Charges","bs":false,"stat":false},"60590":{"desc":"Printing and Stationery","bs":false,"stat":false},"60595":{"desc":"Professional Fees","bs":false,"stat":false},"60600":{"desc":"Promotion","bs":false,"stat":false},"60605":{"desc":"Provision for Doubtful Accounts","bs":false,"stat":false},"60610":{"desc":"Rent","bs":false,"stat":false},"60615":{"desc":"Reservation Fees","bs":false,"stat":false},"60620":{"desc":"Reservations","bs":false,"stat":false},"60625":{"desc":"Royalty Fees","bs":false,"stat":false},"60630":{"desc":"Security","bs":false,"stat":false},"60635":{"desc":"Settlement Costs","bs":false,"stat":false},"60640":{"desc":"Staff Transportation","bs":false,"stat":false},"60645":{"desc":"Steam","bs":false,"stat":false},"60650":{"desc":"Swimming Pool","bs":false,"stat":false},"60655":{"desc":"System Storage and Optimization","bs":false,"stat":false},"60660":{"desc":"T.A Commissions","bs":false,"stat":false},"60665":{"desc":"Tournament Expenses","bs":false,"stat":false},"60670":{"desc":"Trade Shows","bs":false,"stat":false},"60675":{"desc":"Training","bs":false,"stat":false},"60680":{"desc":"Travel—Meals & Enter.","bs":false,"stat":false},"60685":{"desc":"Travel—Other","bs":false,"stat":false},"60690":{"desc":"Uniform Costs","bs":false,"stat":false},"60695":{"desc":"Uniform Laundry","bs":false,"stat":false},"60700":{"desc":"Utensils","bs":false,"stat":false},"60705":{"desc":"Vehicle Rep. & Maint.","bs":false,"stat":false},"60710":{"desc":"Vehicles Insurance Policy","bs":false,"stat":false},"60715":{"desc":"Waste Removal","bs":false,"stat":false},"60720":{"desc":"Water","bs":false,"stat":false},"60725":{"desc":"Sewage Water","bs":false,"stat":false},"60730":{"desc":"Website","bs":false,"stat":false},"60735":{"desc":"Hotel Insurance Policy","bs":false,"stat":false},"70000":{"desc":"FF&E Replacement Reserve","bs":false,"stat":false},"70400":{"desc":"Royalty Fee","bs":false,"stat":false},"75000":{"desc":"Base Fee","bs":false,"stat":false},"75100":{"desc":"Incentive Fee","bs":false,"stat":false},"75200":{"desc":"Marketing Fee","bs":false,"stat":false},"75400":{"desc":"Royalty Fee","bs":false,"stat":false},"80100":{"desc":"Cost Recovery Income","bs":false,"stat":false},"80200":{"desc":"Interest Income","bs":false,"stat":false},"80300":{"desc":"Other Income","bs":false,"stat":false},"81100":{"desc":"Land and Buildings","bs":false,"stat":false},"81200":{"desc":"Other Property and Equipment","bs":false,"stat":false},"82100":{"desc":"Business and Occupation Taxes","bs":false,"stat":false},"82200":{"desc":"Other Taxes and Assessments","bs":false,"stat":false},"82300":{"desc":"Personal Property Taxes","bs":false,"stat":false},"82400":{"desc":"Real Estate Taxes","bs":false,"stat":false},"83100":{"desc":"Building and Contents","bs":false,"stat":false},"83200":{"desc":"Liability","bs":false,"stat":false},"83300":{"desc":"Deductible","bs":false,"stat":false},"84100":{"desc":"Cost Recovery Expense","bs":false,"stat":false},"84200":{"desc":"Gain/Loss on Fixed Assets","bs":false,"stat":false},"84300":{"desc":"Owner Expenses","bs":false,"stat":false},"84400":{"desc":"Unrealized Foreign Exchange Gains or Losses","bs":false,"stat":false},"85000":{"desc":"Transfer of P/L to Owners Account","bs":false,"stat":false},"90000":{"desc":"Head Count","bs":false,"stat":true},"90010":{"desc":"SAR","bs":false,"stat":true},"90020":{"desc":"AED","bs":false,"stat":true},"90030":{"desc":"BHD","bs":false,"stat":true},"90040":{"desc":"KWD","bs":false,"stat":true},"90050":{"desc":"OMA","bs":false,"stat":true},"90060":{"desc":"QAR","bs":false,"stat":true},"90070":{"desc":"USD","bs":false,"stat":true},"90080":{"desc":"EUR","bs":false,"stat":true},"90090":{"desc":"GBP","bs":false,"stat":true},"90100":{"desc":"LBP","bs":false,"stat":true},"90110":{"desc":"CAD","bs":false,"stat":true},"91010":{"desc":"Total Rooms in Hotel","bs":false,"stat":true},"91020":{"desc":"Rooms Occupied","bs":false,"stat":true},"91030":{"desc":"Complimentary Rooms","bs":false,"stat":true},"91040":{"desc":"House Use Rooms","bs":false,"stat":true},"91050":{"desc":"Out of Order Rooms","bs":false,"stat":true},"91060":{"desc":"Out of Service Rooms","bs":false,"stat":true},"91070":{"desc":"Available Rooms","bs":false,"stat":true},"91080":{"desc":"Arrival Rooms","bs":false,"stat":true},"91090":{"desc":"Arrival Persons","bs":false,"stat":true},"91100":{"desc":"In-House Adults","bs":false,"stat":true},"91110":{"desc":"Children Free","bs":false,"stat":true},"91120":{"desc":"In-House Children","bs":false,"stat":true},"91130":{"desc":"Total Guest In-House","bs":false,"stat":true},"91140":{"desc":"Occupancy %","bs":false,"stat":true},"91150":{"desc":"Avg Rate","bs":false,"stat":true},"91160":{"desc":"Clean Rooms","bs":false,"stat":true},"91170":{"desc":"Dirty Rooms","bs":false,"stat":true},"91180":{"desc":"Day Use Rooms","bs":false,"stat":true},"91190":{"desc":"No Show Rooms","bs":false,"stat":true},"91200":{"desc":"Walk-in Rooms","bs":false,"stat":true},"91210":{"desc":"Walk-ins Persons","bs":false,"stat":true},"91220":{"desc":"Avg Length of Stay","bs":false,"stat":true},"92010":{"desc":"Covers","bs":false,"stat":true},"92020":{"desc":"Avg Chk","bs":false,"stat":true},"92030":{"desc":"Square Meters","bs":false,"stat":true},"92040":{"desc":"Number of Seats","bs":false,"stat":true},"92050":{"desc":"Food %","bs":false,"stat":true},"92060":{"desc":"Non Alco. Bev. %","bs":false,"stat":true},"92070":{"desc":"Alcoholic Bev. %","bs":false,"stat":true},"92080":{"desc":"Other %","bs":false,"stat":true},"92090":{"desc":"TBev%","bs":false,"stat":true},"93010":{"desc":"Laundry Weight Processed","bs":false,"stat":true},"94010":{"desc":"Valet Cars Parked","bs":false,"stat":true},"95010":{"desc":"Available Treatments Rooms","bs":false,"stat":true},"95020":{"desc":"Available Treatments Hours","bs":false,"stat":true},"95030":{"desc":"Massage Treatments","bs":false,"stat":true},"95040":{"desc":"Body Treatments","bs":false,"stat":true},"95050":{"desc":"Facial Treatments","bs":false,"stat":true},"95060":{"desc":"Other Treatments","bs":false,"stat":true},"95070":{"desc":"Massage Treatments Hours","bs":false,"stat":true},"95080":{"desc":"Body Treatments Hours","bs":false,"stat":true},"95090":{"desc":"Facial Treatments Hour","bs":false,"stat":true},"95100":{"desc":"Other Treatments Hours","bs":false,"stat":true},"95110":{"desc":"Massage Treatments Guests","bs":false,"stat":true},"95120":{"desc":"Body Treatments Guests","bs":false,"stat":true},"95130":{"desc":"Facial Treatments Guests","bs":false,"stat":true},"95140":{"desc":"Other Treatments Guests","bs":false,"stat":true},"95150":{"desc":"Avg Treatment Price","bs":false,"stat":true},"95160":{"desc":"Avg Massage Price","bs":false,"stat":true},"95170":{"desc":"Avg Body Treatment Price","bs":false,"stat":true},"95180":{"desc":"Avg Facial Treatment Price","bs":false,"stat":true},"95190":{"desc":"Avg Other Treatment Price","bs":false,"stat":true},"95200":{"desc":"Avg Hrs Use per Room","bs":false,"stat":true},"95210":{"desc":"Treatment Room Occupancy","bs":false,"stat":true},"95220":{"desc":"RevPAT","bs":false,"stat":true},"96010":{"desc":"Standard Hours in month","bs":false,"stat":true},"96020":{"desc":"Overtime Hours 1.25","bs":false,"stat":true},"96030":{"desc":"Overtime Hours 1.50","bs":false,"stat":true},"96040":{"desc":"Contract Hours","bs":false,"stat":true},"96050":{"desc":"Vacation Hours","bs":false,"stat":true},"96060":{"desc":"Holiday Hours","bs":false,"stat":true},"96070":{"desc":"Severance Hours","bs":false,"stat":true},"96080":{"desc":"Sick & Bereavement Hours","bs":false,"stat":true},"96090":{"desc":"Labour Chargeback In Hours","bs":false,"stat":true},"96100":{"desc":"Labour Chargeback Out Hours","bs":false,"stat":true},"96110":{"desc":"Fixed Regular Hours","bs":false,"stat":true},"96120":{"desc":"Variable Regular Hours","bs":false,"stat":true},"96130":{"desc":"FTE","bs":false,"stat":true},"97010":{"desc":"Electricity - kWh","bs":false,"stat":true},"97020":{"desc":"Water - cubic meter","bs":false,"stat":true},"97030":{"desc":"Sewage - cubic meter","bs":false,"stat":true},"97040":{"desc":"Gas - cubic meter","bs":false,"stat":true},"98000":{"desc":"Retention","bs":false,"stat":true},"99000":{"desc":"GOP%","bs":false,"stat":true},"99999":{"desc":"Suspense Account","bs":true,"stat":false}},"mapping":{"30000":["1000"],"30010":["1000"],"30020":["1000"],"30030":["1000"],"30040":["1000"],"30050":["1000"],"30060":["1000"],"30099":["1000"],"30100":["2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600"],"30199":["2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600"],"30200":["2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600"],"30299":["2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600"],"30400":["2500","2600"],"30410":["2500"],"30420":["2400"],"30430":["2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600"],"30440":["2400","2500"],"30499":["2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600"],"30500":["4000"],"30501":["4000"],"30502":["4000"],"30503":["4000"],"30520":["4000"],"30521":["4000"],"30522":["4000"],"30523":["4100"],"30524":["4000"],"30550":["4000"],"30551":["4000"],"30552":["4000"],"30553":["4000"],"30554":["4000"],"30599":["4000"],"31000":["4100","5000"],"31001":["4100","5000"],"31002":["4100","5000"],"31003":["4100","5000"],"31004":["4100","5000"],"31005":["4100","5000"],"31006":["4100","5000"],"31100":["4100","5000"],"31150":["4100","5000"],"31200":["4100","5000"],"31201":["4100","5000"],"31202":["4100","5000"],"31203":["4100","5000"],"31204":["4100","5000"],"31205":["4100","5000"],"31206":["4100","5000"],"31301":["5000"],"31399":["4100"],"32000":["4700"],"32001":["4700"],"32002":["4700"],"32003":["4700"],"32099":["4700"],"33000":["4300"],"33100":["4300"],"33200":["4300"],"33299":["4300"],"33300":["4500"],"33310":["4500"],"33320":["4500"],"33399":["4500"],"34000":["4200"],"34050":["4200"],"34100":["4200"],"34150":["4200"],"34200":["4200"],"34250":["4200"],"34300":["4200"],"34350":["4200"],"34400":["4200"],"34450":["4200"],"34500":["4200"],"34599":["4200"],"35000":["4200"],"35100":["4200"],"36000":["5000"],"36001":["5000"],"36002":["5000"],"36003":["5000"],"36004":["5000"],"36005":["5000"],"36006":["5000"],"36007":["5000"],"36008":["5000"],"36009":["5000"],"36010":["5000"],"36011":["5000"],"36012":["5000"],"36013":["5000"],"36014":["5000"],"36100":["5000"],"36101":["5000"],"36102":["5000"],"36103":["5000"],"36104":["5000"],"36105":["5000"],"36106":["5000"],"36107":["5000"],"38500":["1000","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4500","4600","4700"],"40000":["2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600"],"40001":["2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600"],"40002":["2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600"],"40100":["2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600"],"40102":["2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600"],"40103":["2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600"],"40300":["2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600"],"40400":["2500","2600"],"40500":["2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600"],"41000":["4100","5000"],"41001":["4100","5000"],"41002":["4100","5000"],"41003":["4100","5000"],"41004":["4100","5000"],"41005":["4100","5000"],"41006":["4100","5000"],"41100":["4100","5000"],"41150":["4100","5000"],"41200":["4100","5000"],"41201":["4100","5000"],"41202":["4100","5000"],"41203":["4100","5000"],"41204":["4100","5000"],"41205":["4100","5000"],"41206":["4100","5000"],"41301":["4100","5000"],"41399":["4100","5000"],"41400":["4500"],"41450":["4100","4200","4300","4400","4600"],"41500":["2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600"],"42000":["2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600"],"43000":["6100"],"43010":["6100"],"43020":["6100"],"43030":["6100"],"43211":["4800"],"45100":["1010","1020","1030","1040","1200","1210","1220","1230","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4500","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"45300":["1010","1020","1030","1040","1200","1210","1220","1230","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4500","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"45400":["1010","1020","1030","1040","1200","1210","1220","1230","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4500","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"50000":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"50100":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"50200":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"50300":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"50350":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"50400":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"50500":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"50600":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"50610":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"50620":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"50630":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"50640":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"50700":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"50710":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"51000":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"51100":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"51200":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"51201":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"51300":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"51301":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"52000":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"52100":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"52101":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"52102":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"52103":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"52104":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"52105":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"52106":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"52107":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"52200":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"52201":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"52300":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"52301":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"52400":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"52401":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"52500":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"52501":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"52502":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"52503":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"52504":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"52505":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"52510":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"52520":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"55100":["1010","1020","1030","1040","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4100","4200","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"60100":["6200"],"60105":["4000"],"60110":["4000"],"60115":["6020"],"60120":["6020"],"60125":["2500"],"60130":["6300"],"60135":["6020"],"60140":["6020"],"60145":["6400"],"60150":["2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600"],"60155":["1000","2300","4000","4300","4400","4600","4800","4900"],"60165":["6200"],"60170":["1000"],"60175":["1000"],"60180":["1000"],"60185":["1000","2000","4000","4300","4400","4600","6010","6020","6040","6050","6200"],"60190":["1000","2000","4000","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"60195":["1000","2000","4000","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"60200":["6020"],"60205":["6020"],"60210":["1000","1010","1020","1030","2000","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200"],"60215":["6200"],"60220":["2300","4800"],"60225":["6010"],"60230":["1000","1010","1020","1030","2000","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"60235":["6300"],"60240":["6400"],"60245":["6300"],"60250":["6300"],"60255":["1000","1010","1020","1030","2000","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"60260":["1000","1010","1020","1030","2000","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4300","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"60265":["6200"],"60270":["2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600"],"60275":["6300"],"60280":["6200"],"60285":["6200"],"60290":["6300"],"60295":["6400"],"60300":["4200"],"60305":["2000","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4800"],"60310":["6300"],"60315":["1000"],"60320":["1000"],"60325":["1000"],"60330":["4000"],"60335":["6040"],"60340":["6300"],"60345":["6100"],"60350":["6100"],"60355":["6100"],"60360":["6100"],"60365":["6100"],"60370":["6100"],"60375":["6100"],"60380":["6100"],"60385":["6100"],"60390":["6100"],"60395":["6100"],"60400":["6100"],"60405":["6100"],"60410":["6100"],"60415":["6100"],"60420":["6100"],"60425":["2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600"],"60430":["6200"],"60435":["4200"],"60440":["6300"],"60445":["2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4800"],"60450":["2200","4800"],"60455":["1000","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4400","4600","4800"],"60460":["6300"],"60465":["6000","6040"],"60470":["1000","2000","2500","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4300","4400","6000","6040","6050","6100","6300"],"60475":["6300"],"60480":["6300"],"60485":["1000","2000","2400","2500","2600","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000"],"60490":["6000"],"60495":["6200"],"60500":["7000"],"60505":["6200"],"60510":["2000","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600"],"60515":["1000","1010","1020","1030","2000","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4300","4400","4600","4800","4900","5000","6010","6020","6030","6040","6050","6100","6200","6300"],"60520":["2000","2400","2500","2600","2800","2900","3000","3100","3200","3300","3400","3500","3600"],"60525":["6020"],"60530":["6400"],"60535":["1000","1010","1020","1030","2000","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"60540":["6400"],"60545":["6200"],"60550":["6200"],"60555":["6200"],"60560":["6300"],"60565":["2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4800"],"60570":["6040"],"60575":["6200"],"60580":["6300"],"60585":["6000"],"60590":["1000","1010","1020","1030","2000","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4300","4400","4600"],"60595":["6000"],"60600":["6200"],"60605":["6020"],"60610":["7500"],"60615":["7000"],"60620":["1000"],"60625":["7000"],"60630":["6000"],"60640":["6040"],"60645":["6400"],"60650":["6300"],"60655":["6100"],"60660":["1000"],"60665":["4200"],"60670":["6200"],"60675":["1000","1010","1020","1030","1040","2000","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"60680":["1000","1010","1020","1030","1040","2000","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"60685":["1000","1010","1020","1030","1040","2000","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"60690":["1000","1010","1020","1030","1040","2000","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6300"],"60695":["1000","1010","1020","1030","1040","2000","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4300","4400","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"60700":["2000","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4800"],"60705":["6300"],"60710":["6300"],"60715":["6300"],"60720":["6400"],"60725":["6400"],"60730":["6200"],"70400":["7000"],"75000":["7000"],"75100":["7000"],"75200":["7000"],"80100":["7000"],"80200":["7500"],"80300":["7500"],"81100":["7500"],"81200":["7500"],"82100":["7500"],"82200":["7500"],"82300":["7500"],"82400":["7500"],"83100":["7500"],"83200":["7500"],"83300":["7500"],"84100":["7500"],"84200":["7500"],"84300":["7500"],"84400":["8500"],"85000":["8500"],"91010":["1000"],"91020":["1000"],"91030":["1000"],"91040":["1000"],"91050":["1000"],"91060":["1000"],"91070":["1000"],"91080":["1000"],"91090":["1000"],"91100":["1000"],"91110":["1000"],"91120":["1000"],"91130":["1000"],"91140":["1000"],"91150":["1000"],"91160":["1000"],"91170":["1000"],"91180":["1000"],"91190":["1000"],"91200":["1000"],"91210":["1000"],"91220":["1000"],"92010":["2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600"],"92020":["2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600"],"92030":["2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600"],"92040":["2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600"],"92050":["2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600"],"92060":["2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600"],"92070":["2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600"],"92080":["2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600"],"92090":["2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600"],"93010":["4500"],"94010":["4300"],"95010":["4000"],"95020":["4000"],"95030":["4000"],"95040":["4000"],"95050":["4000"],"95060":["4000"],"95070":["4000"],"95080":["4000"],"95090":["4000"],"95100":["4000"],"95110":["4000"],"95120":["4000"],"95130":["4000"],"95140":["4000"],"95150":["4000"],"95160":["4000"],"95170":["4000"],"95180":["4000"],"95190":["4000"],"95200":["4000"],"95210":["4000"],"95220":["4000"],"96010":["1010","1020","1030","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4300","4400","4500","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"96020":["1010","1020","1030","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4300","4400","4500","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"96030":["1010","1020","1030","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4300","4400","4500","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"96040":["1010","1020","1030","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4300","4400","4500","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"96050":["1010","1020","1030","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4300","4400","4500","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"96060":["1010","1020","1030","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4300","4400","4500","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"96070":["1010","1020","1030","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4300","4400","4500","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"96080":["1010","1020","1030","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4300","4400","4500","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"96090":["1010","1020","1030","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4300","4400","4500","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"96100":["1010","1020","1030","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4300","4400","4500","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"96110":["1010","1020","1030","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4300","4400","4500","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"96120":["1010","1020","1030","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4300","4400","4500","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"96130":["1010","1020","1030","2100","2200","2300","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4300","4400","4500","4600","4800","4900","6010","6020","6030","6040","6050","6100","6200","6300"],"97010":["6400"],"97020":["6400"],"97030":["6400"],"97040":["6400"],"98000":["1000","2000","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4300","4400","4500","4600"],"99000":["1000","2000","2400","2500","2600","2700","2800","2900","3000","3100","3200","3300","3400","3500","3600","4000","4300","4400","4500","4600"],"70000":["8500"]},"hrCodes":[{"code":"335001","name":"Advertising—recruiting"},{"code":"335002","name":"Awards—employees"},{"code":"335003","name":"Christmas gifts—employees"},{"code":"335004","name":"Drug testing of employees"},{"code":"335005","name":"Fees, medical"},{"code":"335006","name":"Help wanted ads"},{"code":"335007","name":"In-house newsletter (for employees)"},{"code":"335008","name":"Interview expenses"},{"code":"335010","name":"Lodging of employees"},{"code":"335011","name":"Medical supplies and drugs for employees"},{"code":"335012","name":"Medical supplies for employees"},{"code":"335013","name":"Personnel forms, general"},{"code":"335015","name":"Posters, safety"},{"code":"335016","name":"Prizes, employee"},{"code":"335017","name":"Recruiter fees"},{"code":"335018","name":"Reference checking, employee"},{"code":"335019","name":"Relocation costs"},{"code":"335020","name":"Social activities, employees"},{"code":"335021","name":"Sports activities and equipment, employees"},{"code":"335022","name":"Suggestion awards, employees"},{"code":"335023","name":"Temporary housing, employee"},{"code":"335024","name":"Total quality management"},{"code":"335025","name":"Visa costs for an ex-pat employee"},{"code":"335026","name":"Want ads (help wanted)"}],"classCodes":[{"code":"300","name":"No Class"},{"code":"301","name":"Corporate"},{"code":"302","name":"GM"},{"code":"303","name":"Executives"},{"code":"304","name":"Department Head"},{"code":"305","name":"Middle Management"},{"code":"306","name":"Supervisory level"},{"code":"307","name":"R&F/Line staff"},{"code":"308","name":"Management Trainee"},{"code":"309","name":"Task Force"},{"code":"310","name":"Outside Contractor"},{"code":"311","name":"Casual"},{"code":"320","name":"Other"}],"nationalityCodes":[{"code":"400","name":"No Category"},{"code":"410","name":"Local"},{"code":"420","name":"Expat"},{"code":"421","name":"Afghans"},{"code":"422","name":"Algerians"},{"code":"423","name":"Americans"},{"code":"424","name":"Bahrainis"},{"code":"425","name":"Bangladeshis"},{"code":"426","name":"British"},{"code":"427","name":"Burmese"},{"code":"428","name":"Cambodians"},{"code":"429","name":"Canadians"},{"code":"430","name":"Chinese"},{"code":"431","name":"Dutch"},{"code":"432","name":"Egyptians"},{"code":"433","name":"Emiratis"},{"code":"434","name":"English"},{"code":"435","name":"Eritreans"},{"code":"436","name":"Ethiopians"},{"code":"437","name":"French citizens"},{"code":"438","name":"Germans"},{"code":"439","name":"Greeks"},{"code":"440","name":"Hondurans"},{"code":"441","name":"Indians"},{"code":"442","name":"Indonesians"},{"code":"443","name":"Italians"},{"code":"444","name":"Jordanians"},{"code":"445","name":"Kenyans"},{"code":"446","name":"Kuwaitis"},{"code":"447","name":"Lebanese"},{"code":"448","name":"Maldivians"},{"code":"449","name":"Mexicans"},{"code":"450","name":"Moroccans"},{"code":"451","name":"Nepalese"},{"code":"452","name":"Omani"},{"code":"453","name":"Pakistanis"},{"code":"454","name":"Palestinians"},{"code":"455","name":"Sri Lankans"},{"code":"456","name":"Sudanese"},{"code":"457","name":"Swiss"},{"code":"458","name":"Syrians"},{"code":"459","name":"Tunisians"},{"code":"460","name":"Turkish"},{"code":"461","name":"Yemenis"}],"suppliers":[{"code":"C00001","name":"Abdul Majeed Mdian Al Arwi Trading"},{"code":"C00002","name":"Abu Dawood Trading Company"},{"code":"C00003","name":"Adma Shamran Catering Com."},{"code":"C00004","name":"Al Alanda Trading Company"},{"code":"C00005","name":"Al Fanar Bread Co.LTD"},{"code":"C00006","name":"Al Faris International Travel & Tourism Co."},{"code":"C00007","name":"Al Hindi Bakeries"},{"code":"C00008","name":"Al Jazirah Rent Car"},{"code":"C00009","name":"Al Maaly Al Methalia"},{"code":"C00010","name":"Al Nafiza Al Asaria Workshop"},{"code":"C00011","name":"Al Najah & Al Azdhar Trading Co"},{"code":"C00012","name":"AL Noor Furniture"},{"code":"C00013","name":"Al Ostora Almoudeaah Trading est"},{"code":"C00014","name":"Al Raheef Trading Est"},{"code":"C00015","name":"Al Raqi Trading"},{"code":"C00016","name":"Al Zawq Al Mukhtalif Commercial Est"},{"code":"C00017","name":"Alkurdi Trading & Contracting co"},{"code":"C00018","name":"Alyacht Marketing"},{"code":"C00019","name":"Aromatic Arts Fragrance"},{"code":"C00020","name":"Bayt Al Ebaa"},{"code":"C00021","name":"Bayt Al Riyadah Al Faleh"},{"code":"C00022","name":"Berain Company"},{"code":"C00023","name":"Manabi Al-Imdad Trading Company"},{"code":"C00024","name":"Brins Albehar"},{"code":"C00025","name":"Building System Company"},{"code":"C00026","name":"Buraq ALmumaiz Trading EST."},{"code":"C00027","name":"Check Safety First Co. Cristal"},{"code":"C00028","name":"Coffee Moments"},{"code":"C00029","name":"Creative Bulb"},{"code":"C00030","name":"Dally Corporation"},{"code":"C00031","name":"Dharb Alimthiyaz Trading Co"},{"code":"C00032","name":"Diversy Saudi Arabia Ltd co."},{"code":"C00033","name":"Dormakaba"},{"code":"C00034","name":"Eelgence Kitchen Trading Co."},{"code":"C00035","name":"Fitness Lines Company Limited"},{"code":"C00036","name":"Food line trading"},{"code":"C00037","name":"GOSI"},{"code":"C00038","name":"Gulf Insurance Group Co"},{"code":"C00039","name":"Gulf Wagar For Kitcken&Restaurants Equipments"},{"code":"C00040","name":"Health Water Botting Co"},{"code":"C00041","name":"Hospitality Chain"},{"code":"C00042","name":"Bayd Al-Deira Est"},{"code":"C00043","name":"Ibrahim S. Alrady & Partners co"},{"code":"C00044","name":"Inventive Business Solutions"},{"code":"C00045","name":"Jeddah Expert Printing Press"},{"code":"C00046","name":"Juffali Equipment"},{"code":"C00047","name":"Kayan Elite Trading Est."},{"code":"C00048","name":"PETRA Air Conditioning Contracting Co. Ltd."},{"code":"C00049","name":"Khatam Alkhatam Trading"},{"code":"C00050","name":"Korea Digital Monitoring Sys"},{"code":"C00051","name":"Light Mark Commercial Services"},{"code":"C00052","name":"Luxury Brand Consulting Llc"},{"code":"C00053","name":"Mabrook Saleem  Hamad Al-Hajouri Al-Juhani"},{"code":"C00054","name":"Madar Building Materials"},{"code":"C00055","name":"Madina Plastic"},{"code":"C00056","name":"Magicshotz Production W.L.L"},{"code":"C00057","name":"Masar Al Emar Est"},{"code":"C00058","name":"Masdar Altanfeeth For Contracting"},{"code":"C00059","name":"Med Gulf Insurance"},{"code":"C00060","name":"Modern Riyada Environmental Services"},{"code":"C00061","name":"Modern Solutions Gate"},{"code":"C00062","name":"Mohamed Ali Al Hammami"},{"code":"C00063","name":"Napco Trading & Distribution Co."},{"code":"C00064","name":"National Water Company"},{"code":"C00065","name":"National Gas and Industrialization Company"},{"code":"C00066","name":"Nukbbat Alsumud Water & Sewage"},{"code":"C00067","name":"Other Supplier"},{"code":"C00068","name":"Otis Elevator Company"},{"code":"C00069","name":"Peacock Roaster & Café"},{"code":"C00070","name":"Purchasing Department"},{"code":"C00071","name":"Qima security Supplier"},{"code":"C00072","name":"Qimat Al Erada Trading"},{"code":"C00073","name":"Rawafi Al Ahlam for Pest Control"},{"code":"C00074","name":"Riyadh House"},{"code":"C00075","name":"Rolaco Supplier"},{"code":"C00076","name":"Salat Alhawra - Main Branch"},{"code":"C00077","name":"Saudi Egyptian Company For Uniform & Linen"},{"code":"C00078","name":"Saudi Electricity Company"},{"code":"C00079","name":"Saudico Electronic System"},{"code":"C00080","name":"Shadows for it"},{"code":"C00081","name":"Shahad Al-Basateen"},{"code":"C00082","name":"SHARMA UNITED TRAD EST"},{"code":"C00083","name":"Sky Software Company"},{"code":"C00084","name":"Smart Solution For Safety Tools & Equipment"},{"code":"C00085","name":"Socotra National Trading Company"},{"code":"C00086","name":"STC Company"},{"code":"C00087","name":"Super Kill For Agriculture , Pest Control"},{"code":"C00088","name":"Tel Alyaquot Est. Unifrom"},{"code":"C00089","name":"Tabuk Municipality"},{"code":"C00090","name":"Tawuniya Insuraance Co"},{"code":"C00091","name":"Themar Umluj"},{"code":"C00092","name":"Think Vision - Fiker O Royaa"},{"code":"C00093","name":"Wahaj Almas Hospitality Solutions"},{"code":"C00094","name":"Wataniya Insurance Premium"},{"code":"C00095","name":"Multi-Quality Ltd . Co"},{"code":"C00096","name":"GCS Times Group Company Limited"},{"code":"C00097","name":"Arabian Shield Cooperative  Insurance Co."},{"code":"C00098","name":"Wijdan Saleh Ajaj Al-Juhani Est"},{"code":"C00099","name":"CLEAR SKY TRAVELS AND TOURISM"},{"code":"C00100","name":"Millennium Point Advertising"},{"code":"C00101","name":"Booking.com"},{"code":"C00102","name":"Siemens Limited Company"},{"code":"C00103","name":"Altabayon  Almamari Contracting"},{"code":"C00104","name":"United Taba General Contracting Co."},{"code":"C00105","name":"Al-Ikhlas Al-Asfar"},{"code":"C00106","name":"Suqia Alanhar  Co"},{"code":"C00107","name":"Ufuq Almustaqbal Almushriq Company To Operate Hote"},{"code":"C00108","name":"Expedia Travelscape, LLC"},{"code":"C00109","name":"Schindler Olayan Elevaltor Co. Ltd"},{"code":"C00110","name":"I-Motion Group"},{"code":"C00111","name":"Bupa Arabia for Cooperative Insurance"},{"code":"C00112","name":"TAQADUM INTERGRATED EST"},{"code":"C00113","name":"SYSTEMATIC CONTRACTING COMPANY"},{"code":"C00114","name":"Net Terminals for Communications and Information T"},{"code":"C00115","name":"Basatin Co"},{"code":"C00116","name":"Almahmiya Altabieya Company For Trading Sharikat"},{"code":"C00117","name":"Al Manhal Water Factory Co. Ltd"},{"code":"C00118","name":"Zain Telecommunications"},{"code":"C00119","name":"Bahamdoon Trading Co"},{"code":"C00120","name":"Nihmath Hospitality Company"},{"code":"C00121","name":"Najm Al-Hasad Trading Est"}]};
+let REF = FULL_REF;
+
+function hrCategory(acc){
+  const n = parseInt(acc,10);
+  if (isNaN(n)) return null;
+  if (n>=50000 && n<=55100) return "A";
+  if (n>=90000 && n<=99000) return "B"; // full statistical range confirmed from real COA (Head Count, occupancy, F&B, spa, labour-hours, utility-meter counters — none of them monetary)
+  if (["45100","45200","45300","45400","45500","45600","45700"].includes(acc)) return "C1"; // all chargeback/allocation accounts in the real COA
+  return "C2";
+}
+
+/* ------------------------- Reference file upload ------------------------ */
+function renderRefStatus(){
+  const el = document.getElementById("refStatus");
+  const nAcc = Object.keys(REF.accounts).length, nDep = REF.departments.length, nMap = Object.keys(REF.mapping).length;
+  el.innerHTML = REF.demo
+    ? `<span class="demo">⚠ ${esc(t("refDemo"))}</span>`
+    : `<span class="full">✔ ${esc(t("refFull"))} — ${nAcc} ${t("accounts")} · ${nDep} ${t("depts")} · ${nMap} ${t("mappings")}</span>` +
+      (REF.mapWarn ? `<span class="warn2">⚠ ${esc(t("refMapWarn"))}</span>` : "");
+}
+
+document.getElementById("refFile").addEventListener("change", async e=>{
+  const f = e.target.files[0]; if(!f) return;
+  try{
+    if (typeof XLSX === "undefined") throw new Error("LIBLOAD");
+    const wb = XLSX.read(await f.arrayBuffer(), {type:"array"});
+    const shDep = wb.SheetNames.find(n=>/depart/i.test(n));
+    const shMap = wb.SheetNames.find(n=>/mapping/i.test(n));
+    const shHr  = wb.SheetNames.find(n=>/335|analysis/i.test(n));
+    const next = {demo:false, mapWarn:false, departments:[], accounts:{}, mapping:{}, hrCodes:[]};
+
+    if (shDep){
+      XLSX.utils.sheet_to_json(wb.Sheets[shDep],{header:1}).forEach(r=>{
+        const code = String(r[0]??"").trim(), name = String(r[1]??"").trim();
+        if (/^\d{3,5}$/.test(code)) next.departments.push({code,name});
+      });
+    }
+    const coaSheet = wb.SheetNames.find(n=>/chart|coa/i.test(n));
+    if (coaSheet){
+      XLSX.utils.sheet_to_json(wb.Sheets[coaSheet],{header:1}).forEach(r=>{
+        const code = String(r[0]??"").trim(), desc = String(r[1]??"").trim();
+        if (/^\d{4,6}$/.test(code)) next.accounts[code]={
+          desc,
+          stat: parseInt(code,10)>=96000 && parseInt(code,10)<97000,
+          bs: code===CONTROL.VAT_INPUT || code===CONTROL.AP_CONTROL || /^1|^2/.test(code)
+        };
+      });
+    }
+    if (shMap){
+      XLSX.utils.sheet_to_json(wb.Sheets[shMap],{header:1}).forEach(r=>{
+        const cells = r.map(c=>String(c??"").trim());
+        const acc = cells.find(c=>/^\d{4,6}$/.test(c) && next.accounts[c]);
+        if (!acc) return;
+        const deps = [];
+        cells.forEach(c=>{
+          c.split(/[,;/\s]+/).forEach(p=>{
+            if (/^\d{3,5}$/.test(p) && p!==acc && next.departments.some(d=>d.code===p)) deps.push(p);
+          });
+        });
+        if (deps.length){ next.mapping[acc] = Array.from(new Set([...(next.mapping[acc]||[]), ...deps])); }
+      });
+    }
+    if (shHr){
+      XLSX.utils.sheet_to_json(wb.Sheets[shHr],{header:1}).forEach(r=>{
+        const code = String(r[0]??"").trim();
+        if (/^335\d{3}$/.test(code)) next.hrCodes.push({code, name:String(r[1]??"").trim()});
+      });
+    }
+    /* Require at minimum a Departments sheet and a Chart of Accounts sheet.
+       A missing/empty Mapping sheet used to load silently with zero
+       account→department combinations, which made Step 3 look completely
+       broken with no visible reason. Now it still loads (so the accountant
+       can see accounts/departments) but shows an explicit warning banner. */
+    if (!next.departments.length || !Object.keys(next.accounts).length) throw new Error("SHEETS");
+    if (!Object.keys(next.mapping).length) next.mapWarn = true;
+    if (!next.hrCodes.length) next.hrCodes = FULL_REF.hrCodes;
+    REF = next;
+    renderRefStatus(); renderAlloc();
+    setDocStatus(`✔ ${t("refLoaded")} ${f.name}${next.mapWarn ? " — " + t("refErrPartial") : ""}`);
+  }catch(err){
+    alert(err && err.message === "LIBLOAD" ? t("libLoadErr") : t("refErr"));
+  }
+  e.target.value = "";
+});
+
+/* ------------------------------ helpers -------------------------------- */
+const $ = id => document.getElementById(id);
+const esc = s => String(s??"").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const r2 = x => Math.round((x + Number.EPSILON) * 100) / 100;
+const fmt = x => (x===null||x===undefined||isNaN(x)) ? "" : x.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+const num = id => { const v = parseFloat($(id).value); return isNaN(v)?null:v; };
+function setDocStatus(msg){ $("docStatus").textContent = msg; }
+function chk(cls,msg){ return `<div class="chk ${cls}">${msg}</div>`; }
+
+/* Normalize amount fields to 2 decimals on blur so floating-point drift
+   (e.g. 12.1 + 0.02 → 12.099999999999998) never reaches the JV. */
+["fNet","fVat","fGross"].forEach(id=>{
+  $(id).addEventListener("blur", ()=>{ const v = num(id); if (v!==null) $(id).value = r2(v).toFixed(2); });
+});
+
+/* ------------------------- ZATCA QR (TLV) decode ------------------------ */
+function decodeZatcaTLV(text){
+  // ZATCA QR = Base64 of TLV: tag(1) len(1) value(len bytes, UTF-8)
+  let bytes;
+  try{
+    const clean = String(text||"").replace(/\s+/g,"");
+    const bin = atob(clean);
+    bytes = new Uint8Array(bin.length);
+    for (let i=0;i<bin.length;i++) bytes[i] = bin.charCodeAt(i);
+  }catch(e){ return null; }
+  const out = {}; let i = 0; const dec = new TextDecoder("utf-8");
+  while (i + 2 <= bytes.length){
+    const tag = bytes[i], len = bytes[i+1];
+    if (i + 2 + len > bytes.length) break; // guards against a truncated/corrupt TLV stream
+    out[tag] = dec.decode(bytes.slice(i+2, i+2+len));
+    i += 2 + len;
+  }
+  return (out[1]||out[2]||out[4]) ? out : null;
+}
+
+function applyQr(tlv){
+  const box = $("qrResult");
+  const rows = [];
+  if (tlv[1]) { $("fSupplier").value = tlv[1]; rows.push([t("qrSeller"), tlv[1]]); }
+  if (tlv[2]) { $("fVatNo").value = tlv[2]; rows.push([t("qrVat"), tlv[2]]); }
+  if (tlv[3]) {
+    rows.push([t("qrTime"), tlv[3]]);
+    const d = tlv[3].slice(0,10);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(d)) $("fInvDate").value = d;
+  }
+  if (tlv[4]) { $("fGross").value = tlv[4]; rows.push([t("qrTotal"), tlv[4]]); }
+  if (tlv[5]) { $("fVat").value = tlv[5]; rows.push([t("qrVatAmt"), tlv[5]]); }
+  if (tlv[4] && tlv[5]) {
+    const net = r2(parseFloat(tlv[4]) - parseFloat(tlv[5]));
+    if (!isNaN(net)) $("fNet").value = net.toFixed(2);
+  }
+  box.hidden = false;
+  box.innerHTML = `<h4>${esc(t("qrTitle"))}</h4>` + rows.map(r=>`<div><b>${esc(r[0])}:</b> <span dir="ltr">${esc(r[1])}</span></div>`).join("");
+  validateInvoice();
+}
+
+/* --------------------------- file handling ----------------------------- */
+let lastImageDataUrl = null;
+
+async function scanCanvasForQr(canvas){
+  const ctx = canvas.getContext("2d");
+  const img = ctx.getImageData(0,0,canvas.width,canvas.height);
+  if (typeof jsQR !== "function") throw new Error("LIBLOAD");
+  const found = jsQR(img.data, img.width, img.height);
+  if (found && found.data){
+    const tlv = decodeZatcaTLV(found.data);
+    if (tlv){ applyQr(tlv); return true; }
+  }
+  return false;
+}
+
+async function handleImageFile(file){
+  const url = URL.createObjectURL(file);
+  lastImageDataUrl = url;
+  const imgEl = new Image();
+  await new Promise((res,rej)=>{ imgEl.onload=res; imgEl.onerror=rej; imgEl.src=url; });
+  const canvas = $("workCanvas");
+  const scale = Math.min(1, 1600/Math.max(imgEl.width, imgEl.height));
+  canvas.width = Math.round(imgEl.width*scale); canvas.height = Math.round(imgEl.height*scale);
+  canvas.getContext("2d").drawImage(imgEl,0,0,canvas.width,canvas.height);
+  return await scanCanvasForQr(canvas);
+}
+
+async function handlePdfFile(file){
+  if (typeof pdfjsLib === "undefined") throw new Error("LIBLOAD");
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  const pdf = await pdfjsLib.getDocument({data: await file.arrayBuffer()}).promise;
+  let qrFound = false, textAll = "";
+  const pages = Math.min(pdf.numPages, 3);
+  for (let p=1;p<=pages;p++){
+    const page = await pdf.getPage(p);
+    const tc = await page.getTextContent();
+    textAll += tc.items.map(it=>it.str).join(" ") + "\n";
+    if (!qrFound){
+      const vp = page.getViewport({scale:2});
+      const canvas = $("workCanvas");
+      canvas.width = vp.width; canvas.height = vp.height;
+      await page.render({canvasContext: canvas.getContext("2d"), viewport: vp}).promise;
+      qrFound = await scanCanvasForQr(canvas);
+    }
+  }
+  if (textAll.trim()){
+    $("pasteText").value = textAll.trim();
+    parseInvoiceText(textAll);
+  }
+  setDocStatus(`${t("pdfPage")} ${pages}${qrFound ? "" : "\n"+t("noQr")}`);
+  return qrFound;
+}
+
+const dz = $("dropzone");
+dz.addEventListener("click", ()=>$("fileInput").click());
+dz.addEventListener("keydown", e=>{ if (e.key==="Enter"||e.key===" "){ e.preventDefault(); $("fileInput").click(); } });
+dz.addEventListener("dragover", e=>{ e.preventDefault(); dz.classList.add("drag"); });
+dz.addEventListener("dragleave", ()=>dz.classList.remove("drag"));
+dz.addEventListener("drop", e=>{ e.preventDefault(); dz.classList.remove("drag"); if(e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+$("fileInput").addEventListener("change", e=>{ if(e.target.files[0]) handleFile(e.target.files[0]); });
+
+/* Errors are no longer swallowed into a generic "no QR" message: a library
+   failing to load or a genuinely corrupt file now shows a distinct,
+   accurate message instead of hiding the real cause. */
+async function handleFile(file){
+  $("qrResult").hidden = true;
+  setDocStatus("…");
+  try{
+    let qrFound;
+    if (file.type === "application/pdf" || /\.pdf$/i.test(file.name)) qrFound = await handlePdfFile(file);
+    else qrFound = await handleImageFile(file);
+    if (!qrFound && !(file.type === "application/pdf" || /\.pdf$/i.test(file.name))) setDocStatus(t("noQr"));
+  }catch(err){
+    setDocStatus(err && err.message === "LIBLOAD" ? t("libLoadErr") : t("fileReadErr"));
+  }
+}
+
+/* ------------------------------- OCR ----------------------------------- */
+$("ocrBtn").addEventListener("click", async ()=>{
+  if (!lastImageDataUrl){ setDocStatus(t("ocrNoImg")); return; }
+  const btn = $("ocrBtn");
+  btn.disabled = true; const oldLabel = btn.textContent; btn.textContent = t("ocrBtnBusy");
+  setDocStatus(t("ocrRunning"));
+  try{
+    if (typeof Tesseract === "undefined"){
+      await new Promise((res,rej)=>{
+        const s = document.createElement("script");
+        s.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
+        s.onload = res; s.onerror = rej; document.head.appendChild(s);
+      });
+    }
+    const { data } = await Tesseract.recognize(lastImageDataUrl, "ara+eng");
+    $("pasteText").value = data.text || "";
+    setDocStatus(t("ocrDone"));
+  }catch(e){ setDocStatus(t("ocrLoadErr")); }
+  finally{ btn.disabled = false; btn.textContent = oldLabel; }
+});
+
+/* --------------------------- text parsing ------------------------------ */
+function arDigits(s){
+  return s.replace(/[٠-٩]/g, d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/[۰-۹]/g, d=>"۰۱۲۳۴۵۶۷۸۹".indexOf(d));
+}
+function parseAmount(s){
+  if (!s) return null;
+  const v = parseFloat(String(s).replace(/,/g,""));
+  return isNaN(v)?null:v;
+}
+function parseInvoiceText(raw){
+  const text = arDigits(raw);
+  const pick = (res)=>{ for (const re of res){ const m = text.match(re); if (m) return m[1].trim(); } return null; };
+
+  const invNo = pick([
+    /(?:invoice\s*(?:no|number|#)\.?\s*[:#]?\s*)([A-Za-z0-9\/-]{3,})/i,
+    /(?:رقم\s*الفاتورة|فاتورة\s*رقم)\s*[:#]?\s*([A-Za-z0-9\/-]{3,})/,
+    /\bINV[-\/]?(\d{3,})\b/i
+  ]);
+  if (invNo) $("fInvNo").value = invNo.trim();
+
+  const vatNo = pick([
+    /(?:tax\s*(?:registration\s*)?(?:no|number)|vat\s*(?:no|number)|الرقم\s*الضريبي)\s*[:#]?\s*(3\d{13}3)/i,
+    /\b(3\d{13}3)\b/
+  ]);
+  if (vatNo) $("fVatNo").value = vatNo;
+
+  const dateRaw = pick([
+    /(?:invoice\s*date|date|تاريخ\s*الفاتورة|التاريخ)\s*[:#]?\s*(\d{4}-\d{2}-\d{2})/i,
+    /(?:invoice\s*date|date|تاريخ\s*الفاتورة|التاريخ)\s*[:#]?\s*(\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{4})/i,
+    /\b(\d{4}-\d{2}-\d{2})\b/
+  ]);
+  if (dateRaw){
+    let iso = dateRaw;
+    const m = dateRaw.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);
+    if (m) iso = `${m[3]}-${m[2].padStart(2,"0")}-${m[1].padStart(2,"0")}`;
+    $("fInvDate").value = iso;
+  }
+
+  const po = pick([/(?:P\.?O\.?\s*(?:no|number|#)?\.?\s*[:#]?\s*)([A-Za-z0-9\/-]{3,})/i, /(?:أمر\s*(?:ال)?شراء)\s*[:#]?\s*([A-Za-z0-9\/-]{3,})/]);
+  if (po) $("fPO").value = po;
+
+  const gross = pick([
+    /(?:grand\s*total|total\s*(?:amount)?\s*(?:incl|with|including)|الإجمالي\s*(?:شامل|مع)|المجموع\s*الكلي)[^0-9]*?([\d,]+\.\d{1,2}|[\d,]{1,12})/i,
+    /(?:total\s*due|amount\s*due)[^0-9]*?([\d,]+\.?\d*)/i
+  ]);
+  const vat = pick([
+    /(?:vat|tax|ضريبة(?:\s*القيمة\s*المضافة)?)(?!\s*(?:number|no\.?|reg|الرقم|رقم))[^0-9%\n]*(?:15\s*%)?[^0-9\n]*?([\d,]+\.\d{1,2})/i,
+    /(?:vat|tax|ضريبة(?:\s*القيمة\s*المضافة)?)(?!\s*(?:number|no\.?|reg|الرقم|رقم))[^0-9%\n]*(?:15\s*%)?[^0-9\n]*?([\d,]{1,9})\b/i
+  ]);
+  const net = pick([
+    /(?:sub\s*total|subtotal|net\s*(?:amount)?|الصافي|المجموع\s*الفرعي|الإجمالي\s*قبل)[^0-9]*?([\d,]+\.?\d*)/i
+  ]);
+  const g = parseAmount(gross), v = parseAmount(vat), n = parseAmount(net);
+  if (n!==null) $("fNet").value = n.toFixed(2);
+  if (v!==null) $("fVat").value = v.toFixed(2);
+  if (g!==null) $("fGross").value = g.toFixed(2);
+  if (n===null && g!==null && v!==null) $("fNet").value = r2(g-v).toFixed(2);
+  if (g===null && n!==null && v!==null) $("fGross").value = r2(n+v).toFixed(2);
+
+  if (!$("fSupplier").value){
+    const line = text.split(/\n/).map(s=>s.trim()).find(s=>s.length>3 && !/\d{4,}/.test(s) && !/invoice|فاتورة|vat|ضريب/i.test(s));
+    if (line) $("fSupplier").value = line;
+  }
+  setDocStatus(t("parsedInto"));
+  validateInvoice();
+}
+$("parseBtn").addEventListener("click", ()=>{ const v=$("pasteText").value; if(v.trim()) parseInvoiceText(v); });
+$("clearDocBtn").addEventListener("click", ()=>{
+  ["pasteText","fSupplier","fSupCode","fVatNo","fInvNo","fInvDate","fDueDate","fPO","fDesc","fNet","fVat","fGross"].forEach(id=>$(id).value="");
+  $("qrResult").hidden = true; setDocStatus(""); $("vatCheck").innerHTML=""; $("jvWrap").hidden = true; lastImageDataUrl=null;
+  validateInvoice();
+});
+
+/* -------------------- deterministic VAT / validation -------------------- */
+$("calcBtn").addEventListener("click", ()=>{
+  const rate = parseFloat($("fRate").value)/100;
+  let n = num("fNet"), v = num("fVat"), g = num("fGross");
+  const provided = [n,v,g].filter(x=>x!==null).length;
+  if (provided===0){
+    alert(t("enterOneAmount"));
+  } else if (n!==null && v===null && g===null){
+    v=r2(n*rate); g=r2(n+v);
+  } else if (g!==null && n===null && v===null){
+    n=r2(g/(1+rate)); v=r2(g-n);
+  } else if (n!==null && g!==null && v===null){
+    v=r2(g-n);
+  } else if (n!==null && v!==null && g===null){
+    g=r2(n+v);
+  } else if (g!==null && v!==null && n===null){
+    n=r2(g-v);
+  } else if (n!==null && v!==null && g!==null){
+    /* All three already filled — previously this button silently did
+       nothing here. Now Net is treated as the source of truth and the
+       other two are recalculated from it, so the button always has a
+       visible effect. */
+    v=r2(n*rate); g=r2(n+v);
+    setDocStatus(t("recalcNote"));
+  }
+  if (n!==null) $("fNet").value=n.toFixed(2);
+  if (v!==null) $("fVat").value=v.toFixed(2);
+  if (g!==null) $("fGross").value=g.toFixed(2);
+  validateInvoice();
+});
+
+["fNet","fVat","fGross","fRate","fSupplier","fInvNo","fInvDate","fDesc","fVatNo"].forEach(id=>{
+  $(id).addEventListener("input", validateInvoice);
+  $(id).addEventListener("change", validateInvoice);
+});
+
+const REQUIRED_FIELDS = [["fSupplier","fSupplier"],["fInvNo","fInvNo"],["fInvDate","fInvDate"],["fDesc","fDesc"],["fNet","fNet"],["fGross","fGross"]];
+
+/* Returns both the flat message lists (for the Step-2 summary panel) and a
+   per-field map (for the inline red state under each input) so a reviewer
+   can see exactly which field is at fault, not just a combined sentence. */
+function invoiceIssues(){
+  const issues = {errors:[], warns:[], infos:[], fieldMsgs:{}};
+  const missing = REQUIRED_FIELDS.filter(([id])=>!$(id).value.trim());
+  if (missing.length){
+    issues.errors.push(`MISSING INFORMATION — ${t("missing")}: ${missing.map(([,k])=>t(k).replace(" *","")).join("، ")} — ${t("whyMatters")}.`);
+    missing.forEach(([id])=>{ issues.fieldMsgs[id] = t("reqField"); });
+  }
+
+  const rate = parseFloat($("fRate").value)/100;
+  const n = num("fNet"), v = num("fVat") ?? 0, g = num("fGross");
+  if (n!==null && g!==null){
+    const expV = r2(n*rate);
+    const dRate = r2(Math.abs(expV - v));
+    const dSum  = r2(Math.abs(r2(n+v) - g));
+    const rateOk = dRate <= 0.02, sumOk = dSum <= 0.02;
+    if (rateOk && sumOk){
+      issues.infos.push(t("vatOk"));
+    } else {
+      if (!rateOk){
+        issues.errors.push(`${t("vatRateErr")} ${t("expected")}: ${fmt(expV)} — ${t("vatDiff")}: ${fmt(dRate)}.`);
+        issues.fieldMsgs.fVat = t("fieldMismatch");
+        issues.fieldMsgs.fNet = t("fieldMismatch");
+      }
+      if (!sumOk){
+        issues.errors.push(`${t("vatSumErr")} ${t("expected")}: ${fmt(r2(n+v))} — ${t("vatDiff")}: ${fmt(dSum)}.`);
+        issues.fieldMsgs.fGross = t("fieldMismatch");
+        issues.fieldMsgs.fNet = t("fieldMismatch");
+      }
+    }
+  }
+  if ($("fRate").value === "5") issues.warns.push(t("muniWarn"));
+  const vn = $("fVatNo").value.trim();
+  if (vn && !/^3\d{13}3$/.test(vn)){
+    issues.warns.push(t("vatNoWarn"));
+    issues.fieldMsgs.fVatNo = t("vatNoWarn");
+  }
+
+  /* duplicate check */
+  const reg = loadReg();
+  const sup = $("fSupplier").value.trim().toLowerCase(), inv = $("fInvNo").value.trim().toLowerCase();
+  if (sup && inv && g!==null){
+    const exact = reg.find(r=>r.sup.trim().toLowerCase()===sup && r.inv.trim().toLowerCase()===inv && Math.abs(r.gross-g)<=0.01);
+    const near  = reg.find(r=>r.sup.trim().toLowerCase()===sup && (r.inv.trim().toLowerCase()===inv || Math.abs(r.gross-g)<=0.01));
+    if (exact) issues.errors.push(t("dupConfirmed"));
+    else if (near) issues.warns.push(`${t("dupPossible")} ${esc(near.inv)} / ${fmt(near.gross)} (${esc(near.invDate||"")})`);
+    else issues.infos.push(t("dupNone"));
+  }
+  return issues;
+}
+
+function validateInvoice(){
+  const {errors,warns,infos,fieldMsgs} = invoiceIssues();
+  $("vatCheck").innerHTML =
+    errors.map(m=>chk("err",m)).join("") + warns.map(m=>chk("warn",m)).join("") + infos.map(m=>chk("pass",m)).join("");
+
+  ["fSupplier","fInvNo","fInvDate","fDesc","fNet","fVat","fGross","fVatNo"].forEach(id=>{
+    const wrap = $("wrap_"+id), errEl = $("err_"+id);
+    const msg = fieldMsgs[id] || "";
+    if (wrap) wrap.classList.toggle("invalid", !!msg);
+    if (errEl) errEl.textContent = msg;
+  });
+}
+
+/* -------------------------- allocation lines ---------------------------- */
+let alloc = [{acc:"", dept:"", an:"", amt:null}];
+
+function accOptions(sel){
+  const codes = Object.keys(REF.accounts).filter(c=>{
+    if (REF.accounts[c].bs) return false;
+    const n = parseInt(c,10);
+    if (!isNaN(n) && n>=30000 && n<39000) return false; // revenue accounts — never a valid AP expense-coding target
+    return true;
+  }).sort();
+  return `<option value="">${esc(t("selAcc"))}</option>` + codes.map(c=>{
+    const a = REF.accounts[c];
+    return `<option value="${c}" ${c===sel?"selected":""}>${c} — ${esc(a.desc)}${a.stat?" ["+t("statBadge")+"]":""}</option>`;
+  }).join("");
+}
+function deptOptions(acc, sel){
+  const allowed = REF.mapping[acc] || [];
+  const deps = REF.departments.filter(d=>allowed.includes(d.code));
+  return `<option value="">${esc(t("selDept"))}</option>` + deps.map(d=>`<option value="${d.code}" ${d.code===sel?"selected":""}>${d.code} — ${esc(d.name)}</option>`).join("");
+}
+function anOptions(sel){
+  return `<option value="">${esc(t("selAn"))}</option>` + REF.hrCodes.map(h=>`<option value="${h.code}" ${h.code===sel?"selected":""}>${h.code} — ${esc(h.name)}</option>`).join("");
+}
+
+function renderAlloc(){
+  const tb = $("allocBody");
+  tb.innerHTML = alloc.map((l,i)=>{
+    const acc = l.acc, isHR = l.dept==="6040";
+    let meta = "";
+    if (acc && !(REF.mapping[acc]||[]).length) meta = `<div class="acc-meta cat-b">${esc(t("noMapDept"))}</div>`;
+    if (acc){
+      /* Category A (payroll) / B (statistical) / C1 (chargeback) apply to the
+         ACCOUNT itself, not to which department it's posted under — the real
+         mapping file shows payroll and statistical accounts routed to nearly
+         every operating department, not only HR (6040). */
+      const cat = hrCategory(acc);
+      if (cat==="A") meta += `<div class="acc-meta cat-a">${esc(t("catA"))}</div>`;
+      if (cat==="B") meta += `<div class="acc-meta cat-b">${esc(t("catB"))}</div>`;
+      if (cat==="C1") meta += `<div class="acc-meta cat-a">${esc(t("catC1"))}</div>`;
+    }
+    return `<tr>
+      <td><select data-i="${i}" data-f="acc">${accOptions(acc)}</select>${meta}</td>
+      <td><select data-i="${i}" data-f="dept">${deptOptions(acc, l.dept)}</select></td>
+      <td>${isHR
+          ? `<select data-i="${i}" data-f="an">${anOptions(l.an)}</select>`
+          : `<span class="acc-meta">${esc(t("anNotReq"))}</span>`}</td>
+      <td><input type="number" step="0.01" min="0" value="${l.amt??""}" data-i="${i}" data-f="amt" style="text-align:end"></td>
+      <td>${alloc.length>1?`<button class="rowdel" data-del="${i}" title="${esc(t("del"))}">✕</button>`:""}</td>
+    </tr>`;
+  }).join("");
+
+  tb.querySelectorAll("select,input").forEach(el=>{
+    el.addEventListener("change", e=>{
+      const i = +e.target.dataset.i, f = e.target.dataset.f;
+      if (f==="amt") alloc[i].amt = e.target.value===""?null:r2(parseFloat(e.target.value));
+      else alloc[i][f] = e.target.value;
+      if (f==="acc"){ alloc[i].dept=""; alloc[i].an=""; }
+      if (f==="dept" && e.target.value!=="6040") alloc[i].an="";
+      renderAlloc(); validateCoding();
+    });
+  });
+  tb.querySelectorAll("[data-del]").forEach(b=>b.addEventListener("click", e=>{
+    alloc.splice(+e.target.dataset.del,1); renderAlloc(); validateCoding();
+  }));
+
+  $("hrConfirmWrap").hidden = !alloc.some(l=>l.acc && hrCategory(l.acc)==="A");
+  updateAllocSum();
+}
+$("addAllocBtn").addEventListener("click", ()=>{ alloc.push({acc:"",dept:"",an:"",amt:null}); renderAlloc(); });
+if ($("hrConfirm")) $("hrConfirm").addEventListener("change", validateCoding);
+
+function updateAllocSum(){
+  const sum = r2(alloc.reduce((s,l)=>s+(l.amt||0),0));
+  const n = num("fNet");
+  $("allocSum").textContent = `${t("allocSumLbl")} ${fmt(sum)}${n!==null?` / ${fmt(n)} ${t("ofNet")}`:""}`;
+}
+
+function codingIssues(){
+  const errors=[], warns=[];
+  const lines = alloc.filter(l=>l.acc||l.dept||l.amt);
+  if (!lines.length) errors.push(t("allocEmpty"));
+  else if (lines.some(l=>!l.acc||!l.dept||l.amt===null||isNaN(l.amt))) errors.push(t("allocIncomplete"));
+  lines.forEach(l=>{
+    if (l.acc && l.dept && !(REF.mapping[l.acc]||[]).includes(l.dept)) errors.push(`${l.acc} × ${l.dept}: ${t("noMapDept")}`);
+    const cat = l.acc ? hrCategory(l.acc) : null;
+    if (cat==="B") errors.push(`${l.acc}: ${t("catBBlocked")}`);
+    if (cat==="A" && !($("hrConfirm")&&$("hrConfirm").checked)) errors.push(`${l.acc}: ${t("catANeedsConfirm")}`);
+    if (cat==="C1") warns.push(`${l.acc}: ${t("catC1")}`);
+    if (l.dept==="6040" && !l.an) errors.push(t("hrAnMissing"));
+  });
+  const n = num("fNet");
+  const sum = r2(lines.reduce((s,l)=>s+(l.amt||0),0));
+  if (n!==null && lines.length && Math.abs(sum-n)>0.02) errors.push(`${t("allocMismatch")} (${fmt(sum)} ≠ ${fmt(n)})`);
+  return {errors,warns,lines};
+}
+function validateCoding(){
+  const {errors,warns} = codingIssues();
+  $("codingChecks").innerHTML = errors.map(m=>chk("err",m)).join("") + warns.map(m=>chk("warn",m)).join("");
+  updateAllocSum();
+}
+$("fNet").addEventListener("input", ()=>{ updateAllocSum(); validateCoding(); });
+
+/* ------------------------------ build JV -------------------------------- */
+let currentJV = null;
+
+$("buildBtn").addEventListener("click", ()=>{
+  validateInvoice(); validateCoding();
+  const inv = invoiceIssues(), cod = codingIssues();
+  if (inv.errors.length || cod.errors.length){
+    $("jvWrap").hidden = true;
+    alert(t("buildFirst"));
+    return;
+  }
+  const rateSel = $("fRate").value;
+  const n = num("fNet"), v = num("fVat")||0, g = num("fGross");
+  const sup = $("fSupplier").value.trim(), invNo = $("fInvNo").value.trim(), invDate = $("fInvDate").value;
+  const desc = $("fDesc").value.trim(), curr = $("fCurr").value;
+  const ref = "APJV-" + invDate.replace(/-/g,"") + "-" + invNo.replace(/[^A-Za-z0-9]/g,"").slice(-8).toUpperCase();
+
+  const rows = [];
+  cod.lines.forEach(l=>{
+    const a = REF.accounts[l.acc];
+    rows.push({acc:l.acc, name:a?a.desc:"", dept:l.dept, an:l.an||"", dr:r2(l.amt), cr:0, desc:`${sup} ${invNo} — ${desc}`});
+  });
+  if (rateSel==="15" && v>0){
+    rows.push({acc:CONTROL.VAT_INPUT, name:REF.accounts[CONTROL.VAT_INPUT]?REF.accounts[CONTROL.VAT_INPUT].desc:"VAT Input", dept:"", an:"", dr:r2(v), cr:0, desc:`${t("vatLineDesc")} — ${invNo}`});
+  } else if (v>0){
+    rows.push({acc:"", name:t("uncertain"), dept:"", an:"", dr:r2(v), cr:0, desc:t("muniWarn"), uncertain:true});
+  }
+  rows.push({acc:CONTROL.AP_CONTROL, name:REF.accounts[CONTROL.AP_CONTROL]?REF.accounts[CONTROL.AP_CONTROL].desc:"Supplier / Trade Payables", dept:"", an:"", dr:0, cr:r2(g), desc:`${t("apLineDesc")} — ${sup} ${invNo}`});
+
+  const totDr = r2(rows.reduce((s,r)=>s+r.dr,0));
+  const totCr = r2(rows.reduce((s,r)=>s+r.cr,0));
+  const diff = r2(totDr-totCr);
+  const balanced = Math.abs(diff) <= 0.001 && !rows.some(r=>r.uncertain);
+
+  let conf = 95;
+  if (REF.demo) conf = Math.min(conf, 88);
+  if (REF.mapWarn) conf = Math.min(conf, 70);
+  if (rows.some(r=>r.uncertain)) conf = 40;
+  const confCls = conf>=95?"hi":conf>=80?"md":"lo";
+  const confTxt = conf>=95?t("confHi"):conf>=80?t("confMd"):t("confLo");
+
+  currentJV = {ref, invDate, sup, invNo, curr, rows, totDr, totCr, diff, balanced, gross:g, net:n, vat:v, conf};
+
+  $("jvMeta").innerHTML = `
+    <div><b>${esc(t("jvRef"))}:</b> <span dir="ltr">${esc(ref)}</span></div>
+    <div><b>${esc(t("jvDate"))}:</b> <span dir="ltr">${esc(invDate)}</span></div>
+    <div><b>${esc(t("jvSup"))}:</b> ${esc(sup)}</div>
+    <div><b>${esc(t("jvInv"))}:</b> <span dir="ltr">${esc(invNo)}</span> · ${esc(curr)}</div>`;
+
+  $("jvBody").innerHTML = rows.map(r=>`<tr>
+    <td dir="ltr">${esc(r.acc)||"—"}</td><td>${esc(r.name)}${r.desc?`<div class="acc-meta">${esc(r.desc)}</div>`:""}</td>
+    <td dir="ltr">${esc(r.dept)||"—"}</td><td dir="ltr">${esc(r.an)||"—"}</td>
+    <td class="n">${r.dr?fmt(r.dr):""}</td><td class="n">${r.cr?fmt(r.cr):""}</td>
+  </tr>`).join("");
+
+  $("jvFoot").innerHTML = `<tr>
+    <td colspan="4">${esc(t("totalDr"))} / ${esc(t("totalCr"))} — ${esc(t("diff"))}: <span dir="ltr">${fmt(diff)}</span></td>
+    <td class="n">${fmt(totDr)}</td><td class="n">${fmt(totCr)}</td></tr>`;
+
+  $("jvChecks").innerHTML =
+    (balanced ? chk("pass", t("jvBalanced")) : chk("err", t("jvImbalance") + ` (${t("diff")}: ${fmt(diff)})`)) +
+    chk("info", `${t("confLbl")}: <b>${conf}%</b> — ${confTxt} <span class="badge ${confCls}">${conf}%</span>${REF.demo?" "+t("demoTag"):""}`) +
+    chk("warn", t("approval"));
+
+  $("jvWrap").hidden = false;
+  if ($("jvWrap").scrollIntoView) $("jvWrap").scrollIntoView({behavior:"smooth"});
+});
+
+/* ------------------------------ exports --------------------------------- */
+function dl(name, content, mime){
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob(["\uFEFF"+content], {type:mime||"text/csv;charset=utf-8"}));
+  a.download = name; a.click(); URL.revokeObjectURL(a.href);
+}
+const csvCell = s => `"${String(s??"").replace(/"/g,'""')}"`;
+
+$("csvBtn").addEventListener("click", ()=>{
+  if (!currentJV) return;
+  const j = currentJV;
+  const head = ["DRAFT - NOT A PRODUCTION SUNSYSTEMS IMPORT FILE - HUMAN APPROVAL REQUIRED"];
+  const cols = ["JournalRef","TransDate","AccountCode","AccountDesc","Department","AnalysisCode","Description","Currency","Debit","Credit"];
+  const lines = j.rows.map(r=>[j.ref, j.invDate, r.acc, r.name, r.dept, r.an, r.desc, j.curr, r.dr?r.dr.toFixed(2):"", r.cr?r.cr.toFixed(2):""].map(csvCell).join(","));
+  dl(`${j.ref}_DRAFT.csv`, head.join("\n")+"\n"+cols.join(",")+"\n"+lines.join("\n"));
+});
+
+$("copyBtn").addEventListener("click", ()=>{
+  if (!currentJV) return;
+  const j = currentJV;
+  let out = `${t("jvRef")}: ${j.ref}\n${t("jvDate")}: ${j.invDate}\n${t("jvSup")}: ${j.sup}\n${t("jvInv")}: ${j.invNo} (${j.curr})\n\n`;
+  j.rows.forEach(r=>{
+    const side = r.dr? t("drLine") : t("crLine");
+    const amt = r.dr? r.dr : r.cr;
+    out += `${side} ${r.acc||"????"} — ${r.name}${r.dept?`  Dept ${r.dept}`:""}${r.an?`  An ${r.an}`:""}  ${fmt(amt)}\n`;
+  });
+  out += `\n${t("totalDr")}: ${fmt(j.totDr)}\n${t("totalCr")}: ${fmt(j.totCr)}\n${t("diff")}: ${fmt(j.diff)}\n`;
+  out += j.balanced ? t("jvBalanced") : t("jvImbalance");
+  out += `\n${t("approval")}\n`;
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(out).then(()=>alert(t("copied"))).catch(()=>alert(t("copyFail")));
+  } else {
+    alert(t("copyFail"));
+  }
+});
+
+$("printBtn").addEventListener("click", ()=>window.print());
+
+/* ------------------------------ register -------------------------------- */
+const REG_KEY = "apjvRegister";
+const loadReg = ()=>{ try{ const d = JSON.parse(localStorage.getItem(REG_KEY)); return Array.isArray(d)?d:[]; }catch(e){ return []; } };
+const saveRegData = d => localStorage.setItem(REG_KEY, JSON.stringify(d));
+
+$("saveBtn").addEventListener("click", ()=>{
+  if (!currentJV) return;
+  const j = currentJV;
+  const reg = loadReg();
+  reg.unshift({ts:new Date().toISOString().slice(0,16).replace("T"," "), sup:j.sup, inv:j.invNo, invDate:j.invDate, gross:j.gross, ref:j.ref});
+  saveRegData(reg); renderRegister(); validateInvoice();
+  alert(t("savedReg"));
+});
+
+function renderRegister(){
+  const reg = loadReg();
+  $("regBody").innerHTML = reg.length ? reg.map((r,i)=>`<tr>
+    <td dir="ltr">${esc(r.ts)}</td><td>${esc(r.sup)}</td><td dir="ltr">${esc(r.inv)}</td>
+    <td dir="ltr">${esc(r.invDate)}</td><td class="n">${fmt(r.gross)}</td><td dir="ltr">${esc(r.ref)}</td>
+    <td><button class="rowdel" data-rdel="${i}" title="${esc(t("del"))}">✕</button></td></tr>`).join("")
+    : `<tr><td colspan="7" style="text-align:center;color:var(--muted)">${esc(t("regEmpty"))}</td></tr>`;
+  $("regBody").querySelectorAll("[data-rdel]").forEach(b=>b.addEventListener("click", e=>{
+    const reg2 = loadReg(); reg2.splice(+e.target.dataset.rdel,1); saveRegData(reg2); renderRegister(); validateInvoice();
+  }));
+}
+$("regCsvBtn").addEventListener("click", ()=>{
+  const reg = loadReg();
+  const cols = ["SavedAt","Supplier","InvoiceNo","InvoiceDate","Gross","JVRef"];
+  dl("AP_Invoice_Register.csv", cols.join(",")+"\n"+reg.map(r=>[r.ts,r.sup,r.inv,r.invDate,r.gross,r.ref].map(csvCell).join(",")).join("\n"));
+});
+$("regClearBtn").addEventListener("click", ()=>{
+  if (confirm(t("confirmClear"))){ saveRegData([]); renderRegister(); validateInvoice(); }
+});
+
+/* -------------------------------- init ---------------------------------- */
+document.getElementById("langBtn").addEventListener("click", ()=>{
+  lang = lang==="ar" ? "en" : "ar";
+  localStorage.setItem("apjvLang", lang);
+  applyLang();
+});
+/* ----------------------- supplier master (C00001–C00121) ---------------- */
+function renderSupplierList(){
+  $("supplierList").innerHTML = FULL_REF.suppliers
+    .map(s=>`<option value="${esc(s.name)}">${esc(s.code)} — ${esc(s.name)}</option>`)
+    .join("");
+}
+$("fSupplier").addEventListener("input", ()=>{
+  const v = $("fSupplier").value.trim().toLowerCase();
+  const hit = FULL_REF.suppliers.find(s=>s.name.trim().toLowerCase()===v);
+  if (hit) $("fSupCode").value = hit.code;
+});
+
+applyLang();
+renderAlloc();
+renderRegister();
+renderSupplierList();
+</script>
+<script src="batch-engine.js"></script>
+</body>
