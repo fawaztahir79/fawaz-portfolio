@@ -330,6 +330,8 @@ dupNone:"NO DUPLICATE FOUND — لا يوجد تكرار في السجل الم�
 dupPossible:"POSSIBLE DUPLICATE — يوجد بالسجل فاتورة مشابهة (نفس المورد ونفس الرقم أو نفس المبلغ). مراجعة بشرية مطلوبة:",
 dupConfirmed:"CONFIRMED DUPLICATE — نفس المورد + نفس رقم الفاتورة + نفس المبلغ موجودة في السجل. POSTING BLOCKED حتى المراجعة.",
 selAcc:"— اختر الحساب —", selDept:"— اختر القسم —", selAn:"— اختر كود التحليل —", anNotReq:"غير مطلوب لهذا القسم",
+deptNotReq:"غير مطلوب (حساب ميزانية — لا يُرمَّز على مستوى الأقسام)",
+noDeptNeeded:"هذا الحساب حساب ميزانية ولا يتطلب تحديد قسم — غير مُرمَّز بالقسم في ملف الربط المعتمد لأي حساب ميزانية (تأكيد من الملف الفعلي)، وهذا طبيعي وليس خطأ.",
 noMapDept:"لا توجد أقسام مسموحة لهذا الحساب في ملف الربط — NO APPROVED COMBINATION — ESCALATION REQUIRED",
 catA:"فئة A — حساب رواتب/تكاليف نظامية (50000–55100): HIGH ATTENTION — يتطلب تأكيدًا أنه قيد رواتب وليس فاتورة مورد.",
 catB:"فئة B — حساب إحصائي (ساعات/FTE): STATISTICAL ENTRY — NOT A FINANCIAL JOURNAL LINE — لا يدخل في قيد مالي ولا يخضع لموازنة مدين/دائن بالريال.",
@@ -359,6 +361,7 @@ catFailAlloc:"سطر توزيع غير مكتمل", catFailAllocMismatch:"عدم
 catFailAnalysis:"كود تحليل مفقود", catFailDup:"فاتورة مكررة", catFailTax:"عدم اتساق ضريبي",
 catFailConfirm:"تأكيد بشري مفقود (فئة A)",
 vatLineDesc:"ضريبة مدخلات قابلة للاسترداد 15%", apLineDesc:"إجمالي مستحق للمورد",
+vatInputConfirm:"حساب 15240 هو حساب ضريبة المدخلات القابلة للاسترداد الوحيد في دليل الحسابات (لا يوجد حساب VAT Input عادي بديل) — تأكد أن هذه الفاتورة مستوفية لشروط استرداد ضريبة المدخلات والمستندات الضريبية المطلوبة قبل الترحيل، وليست حالة خاصة (مرتبطة بمشتريات مدفوعة مقدمًا أو غير قابلة للاسترداد).",
 uncertain:"UNCERTAIN — HUMAN REVIEW REQUIRED"
 },
 en:{
@@ -417,6 +420,8 @@ dupNone:"NO DUPLICATE FOUND — no duplicate in the local register.",
 dupPossible:"POSSIBLE DUPLICATE — a similar invoice exists in the register (same supplier and same number or same amount). Human review required:",
 dupConfirmed:"CONFIRMED DUPLICATE — same supplier + invoice number + amount already in the register. POSTING BLOCKED pending review.",
 selAcc:"— select account —", selDept:"— select department —", selAn:"— select analysis code —", anNotReq:"Not required for this department",
+deptNotReq:"Not required (balance-sheet account — not department-coded)",
+noDeptNeeded:"This is a balance-sheet account and does not require a department — no balance-sheet account carries a department row in the approved mapping file (confirmed against the real file), so this is normal, not an error.",
 noMapDept:"No permitted departments for this account in the mapping sheet — NO APPROVED COMBINATION — ESCALATION REQUIRED",
 catA:"Category A — payroll/statutory account (50000–55100): HIGH ATTENTION — confirm this is a genuine payroll journal, not a supplier invoice.",
 catB:"Category B — statistical account (hours/FTE): STATISTICAL ENTRY — NOT A FINANCIAL JOURNAL LINE — excluded from monetary DR/CR balancing.",
@@ -446,6 +451,7 @@ catFailAlloc:"Incomplete allocation line", catFailAllocMismatch:"Allocation tota
 catFailAnalysis:"Missing analysis code", catFailDup:"Duplicate invoice", catFailTax:"Tax inconsistency",
 catFailConfirm:"Missing human confirmation (Category A)",
 vatLineDesc:"Recoverable input VAT 15%", apLineDesc:"Gross payable to supplier",
+vatInputConfirm:"Account 15240 is the only recoverable-input-VAT account in the chart of accounts (there is no separate ordinary VAT Input account) — confirm this invoice meets the recoverability conditions and tax documentation requirements before posting, and is not a special case (tied to a prepaid purchase, or non-recoverable).",
 uncertain:"UNCERTAIN — HUMAN REVIEW REQUIRED"
 }};
 
@@ -1022,6 +1028,20 @@ function isAccrualOrPrepaymentAcc(acc){
   if (isNaN(n)) return false;
   return (n>=15000 && n<16000) || (n>=22000 && n<23000);
 }
+/* Whether an account participates in department-level coding at all.
+   Verified against the real uploaded mapping file: ALL 260 balance-sheet
+   accounts in the COA (cash, bank, AP, accrued, prepaid, equity...) — not
+   just 15xxx/22xxx — have ZERO department rows, while 406 of 431 P&L
+   (expense/revenue) accounts do. This is a structural feature of the
+   mapping file (SunSystems department costing applies only at the P&L
+   level in this hotel's setup), not a data gap: a balance-sheet account
+   must never be blocked or escalated merely for having no department
+   mapping, and must never be forced to carry one. A P&L account with zero
+   mapped departments IS a genuine gap and stays escalation-required. */
+function accountNeedsDept(acc){
+  const a = REF.accounts[acc];
+  return a ? !a.bs : true;
+}
 function accOptions(sel){
   const codes = Object.keys(REF.accounts).filter(c=>{
     if (REF.accounts[c].bs && !isAccrualOrPrepaymentAcc(c)) return false;
@@ -1048,8 +1068,10 @@ function renderAlloc(){
   const tb = $("allocBody");
   tb.innerHTML = alloc.map((l,i)=>{
     const acc = l.acc, isHR = l.dept==="6040";
+    const deptNeeded = acc ? accountNeedsDept(acc) : true;
     let meta = "";
-    if (acc && !(REF.mapping[acc]||[]).length) meta = `<div class="acc-meta cat-b">${esc(t("noMapDept"))}</div>`;
+    if (acc && deptNeeded && !(REF.mapping[acc]||[]).length) meta = `<div class="acc-meta cat-b">${esc(t("noMapDept"))}</div>`;
+    if (acc && !deptNeeded) meta = `<div class="acc-meta">${esc(t("noDeptNeeded"))}</div>`;
     if (acc){
       /* Category A (payroll) / B (statistical) / C1 (chargeback) apply to the
          ACCOUNT itself, not to which department it's posted under — the real
@@ -1063,7 +1085,9 @@ function renderAlloc(){
     }
     return `<tr>
       <td><select data-i="${i}" data-f="acc">${accOptions(acc)}</select>${meta}</td>
-      <td><select data-i="${i}" data-f="dept">${deptOptions(acc, l.dept)}</select></td>
+      <td>${deptNeeded
+          ? `<select data-i="${i}" data-f="dept">${deptOptions(acc, l.dept)}</select>`
+          : `<span class="acc-meta">${esc(t("deptNotReq"))}</span>`}</td>
       <td>${isHR
           ? `<select data-i="${i}" data-f="an">${anOptions(l.an)}</select>`
           : `<span class="acc-meta">${esc(t("anNotReq"))}</span>`}</td>
@@ -1103,15 +1127,20 @@ function codingIssues(){
   const push=(msg,cat)=>{ errors.push(msg); errCats.push(cat); };
   const lines = alloc.filter(l=>l.acc||l.dept||l.amt);
   if (!lines.length) push(t("allocEmpty"),"alloc");
-  else if (lines.some(l=>!l.acc||!l.dept||l.amt===null||isNaN(l.amt))) push(t("allocIncomplete"),"alloc");
+  else if (lines.some(l=>!l.acc||l.amt===null||isNaN(l.amt)||(accountNeedsDept(l.acc)&&!l.dept))) push(t("allocIncomplete"),"alloc");
   lines.forEach(l=>{
-    /* BUG FIX (invalid GL mapping): if the selected account has NO permitted
-       department at all in the reference mapping (e.g. 22220 Accrued
-       Contract Services, which has zero rows in the uploaded mapping file),
-       block generation and name the account explicitly — even before any
-       department is chosen, since none can be. Never invent or auto-pick a
-       department for it. */
-    if (l.acc && !(REF.mapping[l.acc]||[]).length) push(`${l.acc}: ${t("noMapDept")}`,"mapping");
+    /* BUG FIX (invalid GL mapping): if the selected account is a P&L
+       (expense/revenue-type) account with NO permitted department at all
+       in the reference mapping, that is a genuine data gap — block
+       generation and name the account explicitly, even before any
+       department is chosen, since none can be. Never invent or auto-pick
+       a department for it.
+       Balance-sheet accounts (cash, AP, accrued, prepaid, equity...) are
+       NEVER department-coded in the real mapping file (confirmed: 0 of
+       260 BS accounts have any department row) — for those, no department
+       is required at all, so the same zero-mapping fact must NOT trigger
+       this error (see accountNeedsDept()). */
+    if (l.acc && accountNeedsDept(l.acc) && !(REF.mapping[l.acc]||[]).length) push(`${l.acc}: ${t("noMapDept")}`,"mapping");
     else if (l.acc && l.dept && !(REF.mapping[l.acc]||[]).includes(l.dept)) push(`${l.acc} × ${l.dept}: ${t("noMapDept")}`,"mapping");
     const cat = l.acc ? hrCategory(l.acc) : null;
     if (cat==="B") push(`${l.acc}: ${t("catBBlocked")}`,"mapping");
@@ -1247,6 +1276,13 @@ $("buildBtn").addEventListener("click", ()=>{
     (balanced ? chk("pass", t("jvBalanced")) : chk("err", t("jvImbalance") + ` (${t("diff")}: ${fmt(diff)})`)) +
     chk("info", `${t("confLbl")}: <b>${conf}%</b> — ${confTxt} <span class="badge ${confCls}">${conf}%</span>${REF.demo?" "+t("demoTag"):""}`) +
     (supCodeValid ? "" : chk("warn", t("supCodeMissing"))) +
+    /* 15240 is the ONLY recoverable-input-VAT-type account in the whole
+       691-account COA — not a choice between it and an "ordinary" VAT
+       Input account, there is no other one to route to. Still, per
+       policy, routing every 15%-VAT line here is not automatic proof it's
+       correct for THIS invoice — flag it for a one-line human check
+       rather than silently assuming it. */
+    (rows.some(r=>r.acc===CONTROL.VAT_INPUT) ? chk("warn", t("vatInputConfirm")) : "") +
     chk("warn", t("approval"));
 
   $("jvWrap").hidden = false;
