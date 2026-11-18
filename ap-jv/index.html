@@ -333,6 +333,7 @@ noMapDept:"لا توجد أقسام مسموحة لهذا الحساب في مل
 catA:"فئة A — حساب رواتب/تكاليف نظامية (50000–55100): HIGH ATTENTION — يتطلب تأكيدًا أنه قيد رواتب وليس فاتورة مورد.",
 catB:"فئة B — حساب إحصائي (ساعات/FTE): STATISTICAL ENTRY — NOT A FINANCIAL JOURNAL LINE — لا يدخل في قيد مالي ولا يخضع لموازنة مدين/دائن بالريال.",
 catC1:"فئة C1 — تحميل داخلي بين الأقسام: تأكد من أساس التوزيع (قيد توزيعات نهاية شهر وليس فاتورة مورد).",
+catBS:"حساب في قائمة المركز المالي (مستحقات 22xxx أو مصروفات مدفوعة مقدمًا 15xxx) وليس حساب مصروف تشغيلي مباشر في قائمة الدخل: تأكد أن هذه هي المعالجة الصحيحة (تسوية مصروف مستحق سابقًا، أو تأسيس/تخفيض مصروف مدفوع مقدمًا) قبل الترحيل.",
 hrAnMissing:"NO MATCHING HR ANALYSIS CODE — القسم 6040 لا يقبل أي مصروف بدون كود تحليل من سلسلة 335xxx. الحقل إلزامي.",
 allocEmpty:"أضف سطر توزيع واحدًا على الأقل واختر الحساب والقسم والمبلغ.",
 allocIncomplete:"يوجد سطر توزيع غير مكتمل — تحقق من الحساب والقسم والمبلغ في كل سطر.",
@@ -349,7 +350,7 @@ jvRef:"مرجع القيد", jvDate:"تاريخ القيد", jvSup:"المورد
 copied:"تم نسخ القيد.", copyFail:"تعذر النسخ — انسخ النص يدويًا.", savedReg:"تم حفظ الفاتورة في السجل المحلي.",
 regEmpty:"السجل فارغ.", del:"حذف", confirmClear:"هل تريد مسح كامل السجل المحلي؟",
 refLoaded:"تم تحميل الملف المرجعي:", refErr:"تعذر قراءة الملف — تأكد أنه ملف Excel يحوي أوراق: Departments / Chart of Accounts / Account-Department Mapping.",
-demoTag:"(تجريبي)", statBadge:"إحصائي", drLine:"مدين", crLine:"دائن",
+demoTag:"(تجريبي)", statBadge:"إحصائي", bsBadge:"حساب ميزانية", drLine:"مدين", crLine:"دائن",
 buildFirst:"أكمل الخطوات 2 و3 أولاً — راجع رسائل التحقق أعلاه.",
 vatLineDesc:"ضريبة مدخلات قابلة للاسترداد 15%", apLineDesc:"إجمالي مستحق للمورد",
 uncertain:"UNCERTAIN — HUMAN REVIEW REQUIRED"
@@ -414,6 +415,7 @@ noMapDept:"No permitted departments for this account in the mapping sheet — NO
 catA:"Category A — payroll/statutory account (50000–55100): HIGH ATTENTION — confirm this is a genuine payroll journal, not a supplier invoice.",
 catB:"Category B — statistical account (hours/FTE): STATISTICAL ENTRY — NOT A FINANCIAL JOURNAL LINE — excluded from monetary DR/CR balancing.",
 catC1:"Category C1 — internal cross-departmental allocation: confirm the allocation basis (month-end allocation journal, not a supplier invoice).",
+catBS:"This is a balance-sheet account (Accrual 22xxx or Prepaid Expense 15xxx), not a direct P&L expense account: confirm this is the correct treatment (settling a previously-accrued cost, or booking/drawing down a prepayment) before posting.",
 hrAnMissing:"NO MATCHING HR ANALYSIS CODE — Department 6040 accepts no expense posting without a 335xxx analysis code. This field is mandatory.",
 allocEmpty:"Add at least one allocation line and select account, department and amount.",
 allocIncomplete:"An allocation line is incomplete — check the account, department and amount on every line.",
@@ -430,7 +432,7 @@ jvRef:"JV reference", jvDate:"JV date", jvSup:"Supplier", jvInv:"Invoice",
 copied:"JV copied.", copyFail:"Could not copy — copy the text manually.", savedReg:"Invoice saved to local register.",
 regEmpty:"Register is empty.", del:"Delete", confirmClear:"Clear the entire local register?",
 refLoaded:"Reference file loaded:", refErr:"Could not read the file — make sure it is the Excel workbook with sheets: Departments / Chart of Accounts / Account-Department Mapping.",
-demoTag:"(demo)", statBadge:"STAT", drLine:"DR", crLine:"CR",
+demoTag:"(demo)", statBadge:"STAT", bsBadge:"B/S account", drLine:"DR", crLine:"CR",
 buildFirst:"Complete steps 2 and 3 first — see the validation messages above.",
 vatLineDesc:"Recoverable input VAT 15%", apLineDesc:"Gross payable to supplier",
 uncertain:"UNCERTAIN — HUMAN REVIEW REQUIRED"
@@ -992,16 +994,26 @@ function validateInvoice(){
 /* -------------------------- allocation lines ---------------------------- */
 let alloc = [{acc:"", dept:"", an:"", amt:null}];
 
+function isAccrualOrPrepaymentAcc(acc){
+  // Balance-sheet codes that ARE legitimate AP invoice-coding targets in real practice:
+  // 15xxx = Prepaid Expenses (PPD ...) and 22xxx = Accrued Expenses / Provisions.
+  // An invoice can legitimately be coded here instead of a P&L expense account
+  // (e.g. settling a previously-accrued cost, or booking/drawing down a prepayment).
+  const n = parseInt(acc,10);
+  if (isNaN(n)) return false;
+  return (n>=15000 && n<16000) || (n>=22000 && n<23000);
+}
 function accOptions(sel){
   const codes = Object.keys(REF.accounts).filter(c=>{
-    if (REF.accounts[c].bs) return false;
+    if (REF.accounts[c].bs && !isAccrualOrPrepaymentAcc(c)) return false;
     const n = parseInt(c,10);
     if (!isNaN(n) && n>=30000 && n<39000) return false; // revenue accounts — never a valid AP expense-coding target
     return true;
   }).sort();
   return `<option value="">${esc(t("selAcc"))}</option>` + codes.map(c=>{
     const a = REF.accounts[c];
-    return `<option value="${c}" ${c===sel?"selected":""}>${c} — ${esc(a.desc)}${a.stat?" ["+t("statBadge")+"]":""}</option>`;
+    const bsTag = isAccrualOrPrepaymentAcc(c) ? " ["+t("bsBadge")+"]" : "";
+    return `<option value="${c}" ${c===sel?"selected":""}>${c} — ${esc(a.desc)}${a.stat?" ["+t("statBadge")+"]":""}${bsTag}</option>`;
   }).join("");
 }
 function deptOptions(acc, sel){
@@ -1028,6 +1040,7 @@ function renderAlloc(){
       if (cat==="A") meta += `<div class="acc-meta cat-a">${esc(t("catA"))}</div>`;
       if (cat==="B") meta += `<div class="acc-meta cat-b">${esc(t("catB"))}</div>`;
       if (cat==="C1") meta += `<div class="acc-meta cat-a">${esc(t("catC1"))}</div>`;
+      if (isAccrualOrPrepaymentAcc(acc)) meta += `<div class="acc-meta cat-a">${esc(t("catBS"))}</div>`;
     }
     return `<tr>
       <td><select data-i="${i}" data-f="acc">${accOptions(acc)}</select>${meta}</td>
