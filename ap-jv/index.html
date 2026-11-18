@@ -133,7 +133,7 @@ footer{padding:26px 0 34px;text-align:center;color:var(--muted);font-size:12px}
   <h2><span class="stepno">2</span><span data-i18n="s2Title">بيانات الفاتورة والتحقق</span></h2>
   <div class="formgrid">
     <div class="fld" id="wrap_fSupplier"><label for="fSupplier" data-i18n="fSupplier">اسم المورد *</label><input id="fSupplier" type="text" list="supplierList" autocomplete="off" required aria-required="true"><datalist id="supplierList"></datalist><span class="fld-err" id="err_fSupplier" aria-live="polite"></span></div>
-    <div class="fld" id="wrap_fSupCode"><label for="fSupCode" data-i18n="fSupCode">كود المورد (إن وجد)</label><input id="fSupCode" type="text"></div>
+    <div class="fld" id="wrap_fSupCode"><label for="fSupCode" data-i18n="fSupCode">كود المورد (إن وجد)</label><input id="fSupCode" type="text"><span class="fld-err" id="err_fSupCode" aria-live="polite"></span></div>
     <div class="fld" id="wrap_fVatNo"><label for="fVatNo" data-i18n="fVatNo">الرقم الضريبي للمورد (15 خانة)</label><input id="fVatNo" type="text" inputmode="numeric" maxlength="15"><span class="fld-err" id="err_fVatNo" aria-live="polite"></span></div>
     <div class="fld" id="wrap_fInvNo"><label for="fInvNo" data-i18n="fInvNo">رقم الفاتورة *</label><input id="fInvNo" type="text" required aria-required="true"><span class="fld-err" id="err_fInvNo" aria-live="polite"></span></div>
     <div class="fld" id="wrap_fInvDate"><label for="fInvDate" data-i18n="fInvDate">تاريخ الفاتورة *</label><input id="fInvDate" type="date" required aria-required="true"><span class="fld-err" id="err_fInvDate" aria-live="polite"></span></div>
@@ -290,6 +290,7 @@ rate15:"15% ضريبة قيمة مضافة قياسية", rate0:"0% / معفاة
 fNet:"الصافي (قبل الضريبة) *", fVat:"مبلغ الضريبة", fGross:"الإجمالي (شامل الضريبة) *", calcBtn:"إكمال الحساب تلقائيًا",
 translateBtn:"ترجمة إلى الإنجليزية", translating:"جارٍ الترجمة...", translateErr:"تعذرت الترجمة (يتطلب اتصالاً بالإنترنت) — أدخل الوصف بالإنجليزية يدويًا.", translateNote:"✔ ترجمة مقترحة — راجعها وعدّلها إذا لزم قبل القبول، ثم اضغط حفظ الترجمة.",
 arabicDescErr:"الوصف مكتوب بالعربية — قيود SunSystems يجب أن تكون بالإنجليزية. استخدم زر الترجمة أو اكتب وصفًا إنجليزيًا قبل توليد القيد.",
+supCodeMissing:"لم يُحدَّد كود مورد صالح (بصيغة C00000) — سيُرحَّل القيد مؤقتًا لحساب ضبط الموردين العام بدل حساب المورد الفعلي. حدِّد المورد من القائمة أو أدخل كوده الصحيح قبل الاعتماد.",
 s3Title:"التوجيه المحاسبي (حساب / قسم / كود تحليل)",
 refUpload:"رفع الملف المرجعي Waves_Hotel_COA_Department_Reference.xlsx",
 thAccount:"حساب المصروف (GL)", thDept:"القسم", thAnalysis:"كود التحليل", thAmount:"المبلغ (صافي)",
@@ -370,6 +371,7 @@ rate15:"15% standard VAT", rate0:"0% / exempt — no VAT", rate5:"5% Municipal O
 fNet:"Net (before tax) *", fVat:"Tax amount", fGross:"Gross (incl. tax) *", calcBtn:"Auto-complete calculation",
 translateBtn:"Translate to English", translating:"Translating...", translateErr:"Translation failed (requires internet) — type the English description manually.", translateNote:"✔ Suggested translation — review and edit it before accepting, then click Save translation.",
 arabicDescErr:"Description is in Arabic — SunSystems journal entries must be in English. Use the Translate button or type an English description before generating the JV.",
+supCodeMissing:"No valid supplier code (format C00000) was given — the JV will temporarily post to the general supplier control account instead of the actual supplier account. Pick the supplier from the list or enter the correct code before approving.",
 s3Title:"GL Coding (Account / Department / Analysis Code)",
 refUpload:"Upload reference file Waves_Hotel_COA_Department_Reference.xlsx",
 thAccount:"Expense GL account", thDept:"Department", thAnalysis:"Analysis code", thAmount:"Amount (net)",
@@ -904,7 +906,7 @@ $("calcBtn").addEventListener("click", ()=>{
   validateInvoice();
 });
 
-["fNet","fVat","fGross","fRate","fSupplier","fInvNo","fInvDate","fDesc","fVatNo"].forEach(id=>{
+["fNet","fVat","fGross","fRate","fSupplier","fSupCode","fInvNo","fInvDate","fDesc","fVatNo"].forEach(id=>{
   $(id).addEventListener("input", validateInvoice);
   $(id).addEventListener("change", validateInvoice);
 });
@@ -925,6 +927,11 @@ function invoiceIssues(){
   if (ARABIC_RE.test($("fDesc").value)){
     issues.errors.push(t("arabicDescErr"));
     issues.fieldMsgs.fDesc = t("arabicDescErr");
+  }
+
+  if (!/^C\d{5}$/.test($("fSupCode").value.trim().toUpperCase())){
+    issues.warns.push(t("supCodeMissing"));
+    issues.fieldMsgs.fSupCode = t("supCodeMissing");
   }
 
   const rate = parseFloat($("fRate").value)/100;
@@ -974,7 +981,7 @@ function validateInvoice(){
   $("vatCheck").innerHTML =
     errors.map(m=>chk("err",m)).join("") + warns.map(m=>chk("warn",m)).join("") + infos.map(m=>chk("pass",m)).join("");
 
-  ["fSupplier","fInvNo","fInvDate","fDesc","fNet","fVat","fGross","fVatNo"].forEach(id=>{
+  ["fSupplier","fSupCode","fInvNo","fInvDate","fDesc","fNet","fVat","fGross","fVatNo"].forEach(id=>{
     const wrap = $("wrap_"+id), errEl = $("err_"+id);
     const msg = fieldMsgs[id] || "";
     if (wrap) wrap.classList.toggle("invalid", !!msg);
@@ -1111,7 +1118,18 @@ $("buildBtn").addEventListener("click", ()=>{
   } else if (v>0){
     rows.push({acc:"", name:t("uncertain"), dept:"", an:"", dr:r2(v), cr:0, desc:t("muniWarn"), uncertain:true});
   }
-  rows.push({acc:CONTROL.AP_CONTROL, name:REF.accounts[CONTROL.AP_CONTROL]?REF.accounts[CONTROL.AP_CONTROL].desc:"Supplier / Trade Payables", dept:"", an:"", dr:0, cr:r2(g), desc:`${t("apLineDesc")} — ${sup} ${invNo}`});
+  /* Confirmed from Waves Hotel's actual Month-End JV uploads (Oct-2026 sample):
+     a supplier invoice is credited to that supplier's own subledger account
+     (e.g. C00031), not to a generic "A/P Trade" control account. Only fall
+     back to the control account — and flag it for escalation — when no
+     valid supplier code (format C##### ) was entered. */
+  const supCode = $("fSupCode").value.trim().toUpperCase();
+  const supCodeValid = /^C\d{5}$/.test(supCode);
+  if (supCodeValid){
+    rows.push({acc:supCode, name:sup, dept:"", an:"", dr:0, cr:r2(g), desc:`${t("apLineDesc")} — ${sup} ${invNo}`});
+  } else {
+    rows.push({acc:CONTROL.AP_CONTROL, name:REF.accounts[CONTROL.AP_CONTROL]?REF.accounts[CONTROL.AP_CONTROL].desc:"Supplier / Trade Payables", dept:"", an:"", dr:0, cr:r2(g), desc:`${t("apLineDesc")} — ${sup} ${invNo} — ${t("supCodeMissing")}`, supUncertain:true});
+  }
 
   const totDr = r2(rows.reduce((s,r)=>s+r.dr,0));
   const totCr = r2(rows.reduce((s,r)=>s+r.cr,0));
@@ -1121,11 +1139,12 @@ $("buildBtn").addEventListener("click", ()=>{
   let conf = 95;
   if (REF.demo) conf = Math.min(conf, 88);
   if (REF.mapWarn) conf = Math.min(conf, 70);
+  if (rows.some(r=>r.supUncertain)) conf = Math.min(conf, 60);
   if (rows.some(r=>r.uncertain)) conf = 40;
   const confCls = conf>=95?"hi":conf>=80?"md":"lo";
   const confTxt = conf>=95?t("confHi"):conf>=80?t("confMd"):t("confLo");
 
-  currentJV = {ref, invDate, sup, invNo, curr, rows, totDr, totCr, diff, balanced, gross:g, net:n, vat:v, conf};
+  currentJV = {ref, invDate, sup, invNo, curr, rows, totDr, totCr, diff, balanced, gross:g, net:n, vat:v, conf, supCodeValid};
 
   $("jvMeta").innerHTML = `
     <div><b>${esc(t("jvRef"))}:</b> <span dir="ltr">${esc(ref)}</span></div>
@@ -1146,6 +1165,7 @@ $("buildBtn").addEventListener("click", ()=>{
   $("jvChecks").innerHTML =
     (balanced ? chk("pass", t("jvBalanced")) : chk("err", t("jvImbalance") + ` (${t("diff")}: ${fmt(diff)})`)) +
     chk("info", `${t("confLbl")}: <b>${conf}%</b> — ${confTxt} <span class="badge ${confCls}">${conf}%</span>${REF.demo?" "+t("demoTag"):""}`) +
+    (supCodeValid ? "" : chk("warn", t("supCodeMissing"))) +
     chk("warn", t("approval"));
 
   $("jvWrap").hidden = false;
@@ -1160,13 +1180,46 @@ function dl(name, content, mime){
 }
 const csvCell = s => `"${String(s??"").replace(/"/g,'""')}"`;
 
+/* Column layout and header-block structure matched against Waves Hotel's
+   own Month-End JV upload file (Oct-2026 sample: BU/Journal Type/JV
+   Description/Accounting Period/Trans. Date header block, then
+   Ledger/Layout ID/Date/Account Code/Name/Trans. Ref/Description/(blank)/
+   Debit/Credit/Amount/D/C/(blank)/Dept./Department Name/(blank)/Sgmt./
+   Segment Name/(blank)/Payroll Class/Name/Payrll Cat/Name/(blank)).
+   Ledger, Layout ID, Segment and Payroll columns are left blank: their
+   exact per-line values are an internal SunSystems/Lasata convention this
+   tool cannot infer from the sample alone — confirm with IT/SunSystems
+   support before relying on this file, and test-import one small JV
+   first. */
+function periodFromDate(iso){
+  const m = /^(\d{4})-(\d{2})/.exec(iso||"");
+  return m ? `${m[1]}/0${m[2]}` : "";
+}
+function deptName(code){ const d = REF.departments.find(x=>x.code===code); return d?d.name:""; }
+
+function buildSunSystemsCsv(j){
+  const L = [];
+  L.push(["BU","WHU","Waves Hotel"]);
+  L.push(["Journal Type","00001","Journal Voucher Posting"]);
+  L.push(["JV Description", `${j.sup} ${j.invNo} — ${j.ref}`]);
+  L.push(["Accounting Period", periodFromDate(j.invDate)]);
+  L.push(["Trans. Date", j.invDate]);
+  L.push(["Error Cell","","","","","","","JV Total","", j.totDr.toFixed(2), j.totCr.toFixed(2),"", j.diff.toFixed(2)]);
+  L.push(["Comment Cell", j.balanced?"":"UNBALANCED — HUMAN REVIEW REQUIRED", j.supCodeValid?"":t("supCodeMissing")]);
+  L.push(["Ledger ","A","Layout ID","Date","Account Code","Name","Trans. Ref","Description","","Debit","Credit","Amount","D/C","","Dept.","Department Name","","Sgmt.","Segment Name","","Payroll Class","Name","Payrll Cat","Name",""]);
+  j.rows.forEach(r=>{
+    L.push(["","","", j.invDate, r.acc||"", r.name||"", j.invNo, r.desc||"","",
+      r.dr?r.dr.toFixed(2):"", r.cr?r.cr.toFixed(2):"", (r.dr||r.cr).toFixed(2), r.dr?"D":"C","",
+      r.dept||"", deptName(r.dept)||"","","","","", "","","",""]);
+  });
+  return L.map(row=>row.map(csvCell).join(",")).join("\n");
+}
+
 $("csvBtn").addEventListener("click", ()=>{
   if (!currentJV) return;
   const j = currentJV;
-  const head = ["DRAFT - NOT A PRODUCTION SUNSYSTEMS IMPORT FILE - HUMAN APPROVAL REQUIRED"];
-  const cols = ["JournalRef","TransDate","AccountCode","AccountDesc","Department","AnalysisCode","Description","Currency","Debit","Credit"];
-  const lines = j.rows.map(r=>[j.ref, j.invDate, r.acc, r.name, r.dept, r.an, r.desc, j.curr, r.dr?r.dr.toFixed(2):"", r.cr?r.cr.toFixed(2):""].map(csvCell).join(","));
-  dl(`${j.ref}_DRAFT.csv`, head.join("\n")+"\n"+cols.join(",")+"\n"+lines.join("\n"));
+  const banner = `"DRAFT — matches the Waves Hotel Month-End JV layout but is NOT confirmed as a production SunSystems import file. Ledger/Layout ID/Segment/Payroll columns are blank — verify with IT/SunSystems support and test-import before relying on this. HUMAN APPROVAL REQUIRED."`;
+  dl(`${j.ref}_DRAFT.csv`, banner+"\n"+buildSunSystemsCsv(j));
 });
 
 $("copyBtn").addEventListener("click", ()=>{
