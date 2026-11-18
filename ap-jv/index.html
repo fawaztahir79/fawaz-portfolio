@@ -140,7 +140,14 @@ footer{padding:26px 0 34px;text-align:center;color:var(--muted);font-size:12px}
     <div class="fld" id="wrap_fDueDate"><label for="fDueDate" data-i18n="fDueDate">تاريخ الاستحقاق</label><input id="fDueDate" type="date"></div>
     <div class="fld" id="wrap_fPO"><label for="fPO" data-i18n="fPO">رقم أمر الشراء PO</label><input id="fPO" type="text"></div>
     <div class="fld" id="wrap_fCurr"><label for="fCurr" data-i18n="fCurr">العملة</label><select id="fCurr"><option>SAR</option><option>USD</option><option>EUR</option></select></div>
-    <div class="fld" id="wrap_fDesc"><label for="fDesc" data-i18n="fDesc">وصف الفاتورة *</label><input id="fDesc" type="text" required aria-required="true"><span class="fld-err" id="err_fDesc" aria-live="polite"></span></div>
+    <div class="fld" id="wrap_fDesc"><label for="fDesc" data-i18n="fDesc">وصف الفاتورة *</label>
+      <div style="display:flex;gap:6px;align-items:flex-start">
+        <input id="fDesc" type="text" required aria-required="true" style="flex:1">
+        <button type="button" id="translateDescBtn" class="btn secondary" data-i18n="translateBtn" style="white-space:nowrap">ترجمة إلى الإنجليزية</button>
+      </div>
+      <span class="fld-err" id="err_fDesc" aria-live="polite"></span>
+      <div id="translateStatus" class="batch-mini" style="display:none"></div>
+    </div>
     <div class="fld" id="wrap_fRate"><label for="fRate" data-i18n="fRate">المعاملة الضريبية</label>
       <select id="fRate">
         <option value="15" data-i18n="rate15">15% ضريبة قيمة مضافة قياسية</option>
@@ -281,6 +288,8 @@ fInvNo:"رقم الفاتورة *", fInvDate:"تاريخ الفاتورة *", fD
 fCurr:"العملة", fDesc:"وصف الفاتورة *", fRate:"المعاملة الضريبية",
 rate15:"15% ضريبة قيمة مضافة قياسية", rate0:"0% / معفاة — بدون ضريبة", rate5:"5% رسم إشغال بلدي (تنبيه — ليست VAT)",
 fNet:"الصافي (قبل الضريبة) *", fVat:"مبلغ الضريبة", fGross:"الإجمالي (شامل الضريبة) *", calcBtn:"إكمال الحساب تلقائيًا",
+translateBtn:"ترجمة إلى الإنجليزية", translating:"جارٍ الترجمة...", translateErr:"تعذرت الترجمة (يتطلب اتصالاً بالإنترنت) — أدخل الوصف بالإنجليزية يدويًا.", translateNote:"✔ ترجمة مقترحة — راجعها وعدّلها إذا لزم قبل القبول، ثم اضغط حفظ الترجمة.",
+arabicDescErr:"الوصف مكتوب بالعربية — قيود SunSystems يجب أن تكون بالإنجليزية. استخدم زر الترجمة أو اكتب وصفًا إنجليزيًا قبل توليد القيد.",
 s3Title:"التوجيه المحاسبي (حساب / قسم / كود تحليل)",
 refUpload:"رفع الملف المرجعي Waves_Hotel_COA_Department_Reference.xlsx",
 thAccount:"حساب المصروف (GL)", thDept:"القسم", thAnalysis:"كود التحليل", thAmount:"المبلغ (صافي)",
@@ -359,6 +368,8 @@ fInvNo:"Invoice number *", fInvDate:"Invoice date *", fDueDate:"Due date", fPO:"
 fCurr:"Currency", fDesc:"Invoice description *", fRate:"Tax treatment",
 rate15:"15% standard VAT", rate0:"0% / exempt — no VAT", rate5:"5% Municipal Occupancy Fee (NOT VAT)",
 fNet:"Net (before tax) *", fVat:"Tax amount", fGross:"Gross (incl. tax) *", calcBtn:"Auto-complete calculation",
+translateBtn:"Translate to English", translating:"Translating...", translateErr:"Translation failed (requires internet) — type the English description manually.", translateNote:"✔ Suggested translation — review and edit it before accepting, then click Save translation.",
+arabicDescErr:"Description is in Arabic — SunSystems journal entries must be in English. Use the Translate button or type an English description before generating the JV.",
 s3Title:"GL Coding (Account / Department / Analysis Code)",
 refUpload:"Upload reference file Waves_Hotel_COA_Department_Reference.xlsx",
 thAccount:"Expense GL account", thDept:"Department", thAnalysis:"Analysis code", thAmount:"Amount (net)",
@@ -832,6 +843,36 @@ $("clearDocBtn").addEventListener("click", ()=>{
   validateInvoice();
 });
 
+/* ------------------- Arabic description → English translation ----------
+   SunSystems journal lines must be in English. We never auto-translate
+   silently: the accountant clicks the button (explicit per-invoice
+   authorization to send this text to a translation service), reviews the
+   suggestion, edits it if needed, then it simply sits in the editable
+   field like anything else they typed. Nothing else about the tool's
+   "processed locally" guarantee changes — invoice amounts, QR data and
+   images never leave the browser; only the free-text description does,
+   and only on this explicit click. */
+const ARABIC_RE = /[؀-ۿ]/;
+$("translateDescBtn").addEventListener("click", async ()=>{
+  const src = $("fDesc").value.trim();
+  const statusEl = $("translateStatus");
+  statusEl.style.display = "block";
+  if (!src){ statusEl.textContent = ""; statusEl.style.display="none"; return; }
+  statusEl.className = "batch-mini"; statusEl.textContent = t("translating");
+  try{
+    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(src)}&langpair=ar|en`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const out = data?.responseData?.translatedText;
+    if (!out) throw new Error("empty");
+    $("fDesc").value = out;
+    statusEl.textContent = t("translateNote");
+  }catch(e){
+    statusEl.textContent = t("translateErr");
+  }
+  validateInvoice();
+});
+
 /* -------------------- deterministic VAT / validation -------------------- */
 $("calcBtn").addEventListener("click", ()=>{
   const rate = parseFloat($("fRate").value)/100;
@@ -879,6 +920,11 @@ function invoiceIssues(){
   if (missing.length){
     issues.errors.push(`MISSING INFORMATION — ${t("missing")}: ${missing.map(([,k])=>t(k).replace(" *","")).join("، ")} — ${t("whyMatters")}.`);
     missing.forEach(([id])=>{ issues.fieldMsgs[id] = t("reqField"); });
+  }
+
+  if (ARABIC_RE.test($("fDesc").value)){
+    issues.errors.push(t("arabicDescErr"));
+    issues.fieldMsgs.fDesc = t("arabicDescErr");
   }
 
   const rate = parseFloat($("fRate").value)/100;
