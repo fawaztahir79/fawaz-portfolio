@@ -282,6 +282,12 @@
 
   function loadRow(i){
     const r=state.rows[i]; if(!r)return;
+    /* BUG FIX (stale allocation data): clear the PREVIOUS invoice's GL
+       coding, JV draft and validation messages before loading new invoice
+       data in. Must run before the field values below are overwritten, so
+       there is no moment where new invoice fields sit next to old
+       allocation lines/totals. */
+    if (typeof resetAllocations==="function") resetAllocations();
     const map={fSupplier:r.supplier,fSupCode:r.supCode,fVatNo:r.vatNo,fInvNo:r.invNo,fInvDate:r.invDate,fDueDate:r.dueDate,fPO:r.po,fCurr:r.curr,fDesc:r.desc,fNet:r.net,fVat:r.vat,fGross:r.gross};
     Object.entries(map).forEach(([id,v])=>{if($b(id))$b(id).value=v==null?"":v;});
     /* Infer the tax treatment from the extracted ratio ONLY when it is a

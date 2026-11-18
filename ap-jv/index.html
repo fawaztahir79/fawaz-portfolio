@@ -204,6 +204,7 @@ footer{padding:26px 0 34px;text-align:center;color:var(--muted);font-size:12px}
   <div class="btnrow">
     <button id="buildBtn" class="btn primary big" type="button" data-i18n="buildBtn">توليد مسودة القيد</button>
   </div>
+  <div id="buildErrors" class="checks" role="alert" aria-live="assertive"></div>
   <div id="jvWrap" hidden>
     <div class="jvmeta" id="jvMeta"></div>
     <table class="jv" id="jvTable">
@@ -352,6 +353,11 @@ regEmpty:"السجل فارغ.", del:"حذف", confirmClear:"هل تريد مس�
 refLoaded:"تم تحميل الملف المرجعي:", refErr:"تعذر قراءة الملف — تأكد أنه ملف Excel يحوي أوراق: Departments / Chart of Accounts / Account-Department Mapping.",
 demoTag:"(تجريبي)", statBadge:"إحصائي", bsBadge:"حساب ميزانية", drLine:"مدين", crLine:"دائن",
 buildFirst:"أكمل الخطوات 2 و3 أولاً — راجع رسائل التحقق أعلاه.",
+buildFailedHeader:"تعذر توليد القيد — سبب (أسباب) الفشل",
+catFailInfo:"بيانات فاتورة ناقصة", catFailMapping:"ترميز حساب/قسم غير صالح (لا يوجد ربط معتمد)",
+catFailAlloc:"سطر توزيع غير مكتمل", catFailAllocMismatch:"عدم تطابق إجمالي التوزيع مع الصافي",
+catFailAnalysis:"كود تحليل مفقود", catFailDup:"فاتورة مكررة", catFailTax:"عدم اتساق ضريبي",
+catFailConfirm:"تأكيد بشري مفقود (فئة A)",
 vatLineDesc:"ضريبة مدخلات قابلة للاسترداد 15%", apLineDesc:"إجمالي مستحق للمورد",
 uncertain:"UNCERTAIN — HUMAN REVIEW REQUIRED"
 },
@@ -434,6 +440,11 @@ regEmpty:"Register is empty.", del:"Delete", confirmClear:"Clear the entire loca
 refLoaded:"Reference file loaded:", refErr:"Could not read the file — make sure it is the Excel workbook with sheets: Departments / Chart of Accounts / Account-Department Mapping.",
 demoTag:"(demo)", statBadge:"STAT", bsBadge:"B/S account", drLine:"DR", crLine:"CR",
 buildFirst:"Complete steps 2 and 3 first — see the validation messages above.",
+buildFailedHeader:"JV generation failed — reason(s)",
+catFailInfo:"Missing invoice information", catFailMapping:"Invalid account/department mapping (no approved combination)",
+catFailAlloc:"Incomplete allocation line", catFailAllocMismatch:"Allocation total does not match the net amount",
+catFailAnalysis:"Missing analysis code", catFailDup:"Duplicate invoice", catFailTax:"Tax inconsistency",
+catFailConfirm:"Missing human confirmation (Category A)",
 vatLineDesc:"Recoverable input VAT 15%", apLineDesc:"Gross payable to supplier",
 uncertain:"UNCERTAIN — HUMAN REVIEW REQUIRED"
 }};
@@ -918,16 +929,22 @@ const REQUIRED_FIELDS = [["fSupplier","fSupplier"],["fInvNo","fInvNo"],["fInvDat
 /* Returns both the flat message lists (for the Step-2 summary panel) and a
    per-field map (for the inline red state under each input) so a reviewer
    can see exactly which field is at fault, not just a combined sentence. */
+/* errCats mirrors errors 1:1 — a short internal category code per error,
+   used only to build the "why generation failed" summary at the Generate
+   JV button (BUG FIX 5). Never shown to the user directly; t(CAT_LABELS[x])
+   is. */
 function invoiceIssues(){
-  const issues = {errors:[], warns:[], infos:[], fieldMsgs:{}};
+  const issues = {errors:[], errCats:[], warns:[], infos:[], fieldMsgs:{}};
   const missing = REQUIRED_FIELDS.filter(([id])=>!$(id).value.trim());
   if (missing.length){
     issues.errors.push(`MISSING INFORMATION — ${t("missing")}: ${missing.map(([,k])=>t(k).replace(" *","")).join("، ")} — ${t("whyMatters")}.`);
+    issues.errCats.push("info");
     missing.forEach(([id])=>{ issues.fieldMsgs[id] = t("reqField"); });
   }
 
   if (ARABIC_RE.test($("fDesc").value)){
     issues.errors.push(t("arabicDescErr"));
+    issues.errCats.push("info");
     issues.fieldMsgs.fDesc = t("arabicDescErr");
   }
 
@@ -948,11 +965,13 @@ function invoiceIssues(){
     } else {
       if (!rateOk){
         issues.errors.push(`${t("vatRateErr")} ${t("expected")}: ${fmt(expV)} — ${t("vatDiff")}: ${fmt(dRate)}.`);
+        issues.errCats.push("tax");
         issues.fieldMsgs.fVat = t("fieldMismatch");
         issues.fieldMsgs.fNet = t("fieldMismatch");
       }
       if (!sumOk){
         issues.errors.push(`${t("vatSumErr")} ${t("expected")}: ${fmt(r2(n+v))} — ${t("vatDiff")}: ${fmt(dSum)}.`);
+        issues.errCats.push("tax");
         issues.fieldMsgs.fGross = t("fieldMismatch");
         issues.fieldMsgs.fNet = t("fieldMismatch");
       }
@@ -971,7 +990,7 @@ function invoiceIssues(){
   if (sup && inv && g!==null){
     const exact = reg.find(r=>r.sup.trim().toLowerCase()===sup && r.inv.trim().toLowerCase()===inv && Math.abs(r.gross-g)<=0.01);
     const near  = reg.find(r=>r.sup.trim().toLowerCase()===sup && (r.inv.trim().toLowerCase()===inv || Math.abs(r.gross-g)<=0.01));
-    if (exact) issues.errors.push(t("dupConfirmed"));
+    if (exact){ issues.errors.push(t("dupConfirmed")); issues.errCats.push("dup"); }
     else if (near) issues.warns.push(`${t("dupPossible")} ${esc(near.inv)} / ${fmt(near.gross)} (${esc(near.invDate||"")})`);
     else issues.infos.push(t("dupNone"));
   }
@@ -1080,22 +1099,30 @@ function updateAllocSum(){
 }
 
 function codingIssues(){
-  const errors=[], warns=[];
+  const errors=[], errCats=[], warns=[];
+  const push=(msg,cat)=>{ errors.push(msg); errCats.push(cat); };
   const lines = alloc.filter(l=>l.acc||l.dept||l.amt);
-  if (!lines.length) errors.push(t("allocEmpty"));
-  else if (lines.some(l=>!l.acc||!l.dept||l.amt===null||isNaN(l.amt))) errors.push(t("allocIncomplete"));
+  if (!lines.length) push(t("allocEmpty"),"alloc");
+  else if (lines.some(l=>!l.acc||!l.dept||l.amt===null||isNaN(l.amt))) push(t("allocIncomplete"),"alloc");
   lines.forEach(l=>{
-    if (l.acc && l.dept && !(REF.mapping[l.acc]||[]).includes(l.dept)) errors.push(`${l.acc} × ${l.dept}: ${t("noMapDept")}`);
+    /* BUG FIX (invalid GL mapping): if the selected account has NO permitted
+       department at all in the reference mapping (e.g. 22220 Accrued
+       Contract Services, which has zero rows in the uploaded mapping file),
+       block generation and name the account explicitly — even before any
+       department is chosen, since none can be. Never invent or auto-pick a
+       department for it. */
+    if (l.acc && !(REF.mapping[l.acc]||[]).length) push(`${l.acc}: ${t("noMapDept")}`,"mapping");
+    else if (l.acc && l.dept && !(REF.mapping[l.acc]||[]).includes(l.dept)) push(`${l.acc} × ${l.dept}: ${t("noMapDept")}`,"mapping");
     const cat = l.acc ? hrCategory(l.acc) : null;
-    if (cat==="B") errors.push(`${l.acc}: ${t("catBBlocked")}`);
-    if (cat==="A" && !($("hrConfirm")&&$("hrConfirm").checked)) errors.push(`${l.acc}: ${t("catANeedsConfirm")}`);
+    if (cat==="B") push(`${l.acc}: ${t("catBBlocked")}`,"mapping");
+    if (cat==="A" && !($("hrConfirm")&&$("hrConfirm").checked)) push(`${l.acc}: ${t("catANeedsConfirm")}`,"confirm");
     if (cat==="C1") warns.push(`${l.acc}: ${t("catC1")}`);
-    if (l.dept==="6040" && !l.an) errors.push(t("hrAnMissing"));
+    if (l.dept==="6040" && !l.an) push(t("hrAnMissing"),"analysis");
   });
   const n = num("fNet");
   const sum = r2(lines.reduce((s,l)=>s+(l.amt||0),0));
-  if (n!==null && lines.length && Math.abs(sum-n)>0.02) errors.push(`${t("allocMismatch")} (${fmt(sum)} ≠ ${fmt(n)})`);
-  return {errors,warns,lines};
+  if (n!==null && lines.length && Math.abs(sum-n)>0.02) push(`${t("allocMismatch")} (${fmt(sum)} ≠ ${fmt(n)})`,"allocMismatch");
+  return {errors,errCats,warns,lines};
 }
 function validateCoding(){
   const {errors,warns} = codingIssues();
@@ -1107,14 +1134,55 @@ $("fNet").addEventListener("input", ()=>{ updateAllocSum(); validateCoding(); })
 /* ------------------------------ build JV -------------------------------- */
 let currentJV = null;
 
+/* BUG FIX (stale allocation data): loading a different invoice must never
+   leave the previous invoice's GL account / department / analysis code /
+   allocation amounts, or its JV draft, on screen. Without this, a small
+   invoice (e.g. SAR 640.92) could inherit a large prior invoice's allocation
+   total (e.g. SAR 38,599.22), silently mismatching the two. This is the only
+   place accounting coding is cleared between invoices — nothing carries
+   forward unless the accountant re-enters it for the new invoice. */
+function resetAllocations(){
+  alloc = [{acc:"", dept:"", an:"", amt:null}];
+  currentJV = null;
+  if ($("hrConfirm")) $("hrConfirm").checked = false;
+  $("jvWrap").hidden = true;
+  $("jvMeta").innerHTML = "";
+  $("jvBody").innerHTML = "";
+  $("jvFoot").innerHTML = "";
+  $("jvChecks").innerHTML = "";
+  if ($("buildErrors")) $("buildErrors").innerHTML = "";
+  renderAlloc();   // refresh allocation totals
+  validateCoding(); // refresh accounting validation
+}
+
+/* Internal category code -> localized label, for the "why generation
+   failed" summary (BUG FIX 5). Never shown on its own — always paired
+   with the specific error line(s) that triggered it. */
+const CAT_LABELS = {
+  info:"catFailInfo", mapping:"catFailMapping", alloc:"catFailAlloc",
+  allocMismatch:"catFailAllocMismatch", analysis:"catFailAnalysis",
+  dup:"catFailDup", tax:"catFailTax", confirm:"catFailConfirm"
+};
+
 $("buildBtn").addEventListener("click", ()=>{
   validateInvoice(); validateCoding();
   const inv = invoiceIssues(), cod = codingIssues();
-  if (inv.errors.length || cod.errors.length){
+  const allErrors = [...inv.errors, ...cod.errors];
+  const allCats = [...(inv.errCats||[]), ...(cod.errCats||[])];
+  if (allErrors.length){
     $("jvWrap").hidden = true;
-    alert(t("buildFirst"));
+    /* BUG FIX 5: a detailed, categorized breakdown instead of a generic
+       alert — names every distinct reason generation failed, then lists
+       every individual error message underneath it so the accountant can
+       fix them one by one. */
+    const cats = [...new Set(allCats)].map(c=>t(CAT_LABELS[c]||c));
+    $("buildErrors").innerHTML =
+      chk("err", `<b>${esc(t("buildFailedHeader"))}:</b> ${esc(cats.join("، "))}`) +
+      allErrors.map(m=>chk("err", m)).join("");
+    $("buildErrors").scrollIntoView({behavior:"smooth", block:"center"});
     return;
   }
+  if ($("buildErrors")) $("buildErrors").innerHTML = "";
   const rateSel = $("fRate").value;
   const n = num("fNet"), v = num("fVat")||0, g = num("fGross");
   const sup = $("fSupplier").value.trim(), invNo = $("fInvNo").value.trim(), invDate = $("fInvDate").value;
