@@ -239,9 +239,9 @@ footer{padding:26px 0 34px;text-align:center;color:var(--muted);font-size:12px}
 
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="vendor/jsQR.js"></script>
+<script src="vendor/pdf.min.js"></script>
+<script src="vendor/xlsx.full.min.js"></script>
 <script>
 /* =========================================================================
    AP Invoice → JV Draft Tool — Waves Hotel (WHU) — rebuilt/hardened version
@@ -690,7 +690,7 @@ async function handleImageFile(file){
 
 async function handlePdfFile(file){
   if (typeof pdfjsLib === "undefined") throw new Error("LIBLOAD");
-  pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "vendor/pdf.worker.min.js";
   const pdf = await pdfjsLib.getDocument({data: await file.arrayBuffer()}).promise;
   let qrFound = false, textAll = "";
   const pages = Math.min(pdf.numPages, 3);

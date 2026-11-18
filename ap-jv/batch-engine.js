@@ -184,7 +184,7 @@
 
   async function processPDF(file){
     if(typeof pdfjsLib==="undefined")throw new Error("PDF library unavailable");
-    pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+    pdfjsLib.GlobalWorkerOptions.workerSrc="vendor/pdf.worker.min.js";
     const pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;
     let allText="",qr=null,ocrNeeded=false;
     for(let p=1;p<=pdf.numPages;p++){
@@ -214,16 +214,52 @@
   }
 
   function quality(r){
+    if(r.dupStatus==="CONFIRMED")return ["DUPLICATE","err"];
     const fields=[r.supplier,r.invNo,r.invDate,r.net,r.vat,r.gross,r.vatNo];
     const got=fields.filter(x=>x!==""&&x!==null&&x!==undefined).length;
+    if(r.dupStatus==="POSSIBLE")return ["REVIEW*","warn"];
     if(r.matchedSupplier&&got>=6)return ["PASS","ok"];
     if(got>=4)return ["REVIEW","warn"];
     return ["INCOMPLETE","err"];
   }
 
+  /* Duplicate detection: within the batch itself AND against the persisted
+     local register (supplier + invoice number, or supplier + amount).
+     Mirrors the single-invoice check in the main tool, but run across the
+     whole uploaded batch — the master prompt requires both. */
+  function computeDuplicates(){
+    const reg=(typeof loadReg==="function")?loadReg():[];
+    state.rows.forEach((r,i)=>{
+      r.dupStatus="NONE"; r.dupNote="";
+      const supN=norm(r.supplier||r.supCode||"");
+      if(!supN||r.gross==null)return;
+      let confirmed=null,possible=null;
+      state.rows.forEach((o,j)=>{
+        if(j===i||confirmed)return;
+        const oSupN=norm(o.supplier||o.supCode||"");
+        if(!oSupN||oSupN!==supN||o.gross==null)return;
+        const sameInv=r.invNo&&o.invNo&&norm(r.invNo)===norm(o.invNo);
+        const sameAmt=Math.abs(Number(o.gross)-Number(r.gross))<=0.01;
+        if(sameInv&&sameAmt)confirmed=`نفس الدفعة — ${o.file}`;
+        else if((sameInv||sameAmt)&&!possible)possible=`نفس الدفعة — ${o.file}`;
+      });
+      if(!confirmed)reg.forEach(rg=>{
+        if(confirmed)return;
+        if(norm(rg.sup||"")!==supN)return;
+        const sameInv=r.invNo&&norm(rg.inv||"")===norm(r.invNo||"");
+        const sameAmt=rg.gross!=null&&Math.abs(Number(rg.gross)-Number(r.gross))<=0.01;
+        if(sameInv&&sameAmt)confirmed=`السجل المحلي — ${rg.inv} / ${Number(rg.gross).toFixed(2)}`;
+        else if((sameInv||sameAmt)&&!possible)possible=`السجل المحلي — ${rg.inv} / ${Number(rg.gross).toFixed(2)}`;
+      });
+      if(confirmed){r.dupStatus="CONFIRMED";r.dupNote=confirmed;}
+      else if(possible){r.dupStatus="POSSIBLE";r.dupNote=possible;}
+    });
+  }
+
   function render(){
     const el=$b("batchResults");
     if(!state.rows.length){el.innerHTML="";return;}
+    computeDuplicates();
     el.innerHTML=`
       <table class="batch-table">
         <thead><tr><th>#</th><th>الملف</th><th>المورد / الكود</th><th>الفاتورة</th><th>التاريخ</th><th>الصافي</th><th>VAT</th><th>الإجمالي</th><th>الحالة</th><th></th></tr></thead>
@@ -235,7 +271,7 @@
             <td>${escb(x.supplier||"—")}<div class="batch-mini">${escb(x.supCode||"غير مطابق")}</div></td>
             <td dir="ltr">${escb(x.invNo||"—")}</td><td dir="ltr">${escb(x.invDate||"—")}</td>
             <td dir="ltr">${x.net==null?"—":Number(x.net).toFixed(2)}</td><td dir="ltr">${x.vat==null?"—":Number(x.vat).toFixed(2)}</td><td dir="ltr">${x.gross==null?"—":Number(x.gross).toFixed(2)}</td>
-            <td class="${cl}">${q}</td>
+            <td class="${cl}">${q}${x.dupNote?`<div class="batch-mini">${escb(x.dupNote)}</div>`:""}</td>
             <td><button class="btn secondary batch-load" data-i="${i}" type="button">تحميل</button></td>
           </tr>`;
         }).join("")}
@@ -248,10 +284,27 @@
     const r=state.rows[i]; if(!r)return;
     const map={fSupplier:r.supplier,fSupCode:r.supCode,fVatNo:r.vatNo,fInvNo:r.invNo,fInvDate:r.invDate,fDueDate:r.dueDate,fPO:r.po,fCurr:r.curr,fDesc:r.desc,fNet:r.net,fVat:r.vat,fGross:r.gross};
     Object.entries(map).forEach(([id,v])=>{if($b(id))$b(id).value=v==null?"":v;});
-    if($b("fRate"))$b("fRate").value=(r.vat&&r.net&&Math.abs(Number(r.vat)-rb(Number(r.net)*.15))<=.03)?"15":"0";
+    /* Infer the tax treatment from the extracted ratio ONLY when it is a
+       confident match for a known rate (15% VAT or 5% municipal fee) — never
+       silently default an unmatched/unclear ratio to 0% exempt, which would
+       misclassify a real tax as "no tax due". Anything else is left blank
+       so the accountant must pick explicitly (per Section 7 of the tax
+       engine spec: never assume a non-15% amount is zero-rated). */
+    let rateNote="";
+    if($b("fRate")){
+      if(r.vat&&r.net&&Math.abs(Number(r.vat)-rb(Number(r.net)*.15))<=.03){
+        $b("fRate").value="15";
+      }else if(r.vat&&r.net&&Math.abs(Number(r.vat)-rb(Number(r.net)*.05))<=.03){
+        $b("fRate").value="5";
+        rateNote=" — تم اكتشاف نسبة ~5% (رسم إشغال بلدي) تلقائيًا، تحقق منها.";
+      }else{
+        $b("fRate").value="";
+        if(r.vat!=null||r.net!=null)rateNote=" — تعذر تحديد نوع الضريبة تلقائيًا، اختر المعاملة الضريبية يدويًا.";
+      }
+    }
     if(typeof validateInvoice==="function")validateInvoice();
     if(typeof updateAllocSum==="function")updateAllocSum();
-    if(typeof setDocStatus==="function")setDocStatus("✔ تم تحميل الفاتورة المختارة إلى بيانات الفاتورة — راجعها ثم أكمل التوجيه المحاسبي.");
+    if(typeof setDocStatus==="function")setDocStatus("✔ تم تحميل الفاتورة المختارة إلى بيانات الفاتورة — راجعها ثم أكمل التوجيه المحاسبي."+rateNote);
     window.scrollTo({top:$b("wrap_fSupplier")?.closest(".step")?.offsetTop||0,behavior:"smooth"});
   }
 
@@ -271,9 +324,12 @@
       }
       render();
     }
+    computeDuplicates();
     const pass=state.rows.filter(r=>quality(r)[0]==="PASS").length;
-    const review=state.rows.length-pass;
-    $b("batchProgress").textContent=`اكتمل: ${state.rows.length} فاتورة — PASS: ${pass} — مراجعة: ${review}.\nتمت القراءة محليًا في المتصفح؛ لم يتم إرسال ملفات الفواتير إلى خادم.`;
+    const dupConfirmed=state.rows.filter(r=>r.dupStatus==="CONFIRMED").length;
+    const dupPossible=state.rows.filter(r=>r.dupStatus==="POSSIBLE").length;
+    const review=state.rows.length-pass-dupConfirmed;
+    $b("batchProgress").textContent=`اكتمل: ${state.rows.length} فاتورة — PASS: ${pass} — مراجعة: ${review}${dupConfirmed?` — تكرار مؤكد: ${dupConfirmed} (POSTING BLOCKED)`:""}${dupPossible?` — تكرار محتمل: ${dupPossible}`:""}.\nتمت القراءة محليًا في المتصفح؛ لم يتم إرسال ملفات الفواتير إلى خادم.`;
     state.busy=false;$b("batchPick").disabled=false;
     if(state.rows[0])loadRow(0);
   }
